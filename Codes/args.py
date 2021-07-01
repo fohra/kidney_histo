@@ -16,6 +16,7 @@ parser.add_argument('--model', action='store', type=str, required=False, default
 parser.add_argument('--epochs', action='store', type=int, required=True, help='Number of epochs. REQUIRED')
 parser.add_argument('--run_name', action='store', type=str, required=True, help='Name for WandB run. REQUIRED')
 
+
 args = parser.parse_args()
 
 if __name__ == '__main__':

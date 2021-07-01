@@ -1,6 +1,6 @@
 from dataset import CustomDataset
 from constants import NUM_IMAGES
-from repVGG import Classifier
+from repVGG import repVGG
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -17,7 +17,7 @@ def train(args):
     #testloader = DataLoader(test_set, batch_size=args.batch, shuffle=False, num_workers=args.num_workers) #THIS MIGHT NOT BE NEEDED HERE
 
     # model
-    model = Classifier(args.lr, args.model)
+    model = repVGG(args.lr, args.model)
 
     # training
     wandb_logger = WandbLogger(name=args.run_name)
