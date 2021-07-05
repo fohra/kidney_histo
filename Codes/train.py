@@ -24,5 +24,11 @@ def train(args):
     trainer = pl.Trainer(progress_bar_refresh_rate = 50, max_epochs=1, logger=wandb_logger, gpus=1)
     trainer.fit(model, trainloader, validloader)
 
+    #save final model
+    if model.global_rank == 0: #global_rank needed for multigpu runs
+        model_fname = 'models/model' + str(args.run_name) + '.pth'
+        torch.save(model.state_dict(), model_fname)
+        
+    
 if __name__ == '__main__':
     print('jotain testailua')

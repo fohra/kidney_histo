@@ -3,6 +3,7 @@ import torchvision.transforms as t
 from torch.utils.data import Dataset
 from PIL import Image
 from constants import MEAN, STD
+from gaussian_blur import GaussianBlur
 
 
 class CustomDataset(Dataset):
@@ -18,7 +19,11 @@ class CustomDataset(Dataset):
         '''
         self.spot_infos = pd.read_excel(spot_dir)
         self.paths = pd.read_csv(image_paths, usecols=['path'])
-        self.normalize = t.Compose([
+        self.transformation = t.Compose([
+                        t.RandomVerticalFlip(p=0.5),
+                        t.RandomHorizontalFlip(p=0.5),
+                        t.ColorJitter(brightness=0.4,contrast=0.4,saturation=0.2,hue=0.1,),
+                        GaussianBlur(p=0.2),
                         t.ToTensor(),
                         t.Normalize(MEAN, STD),
                     ])
@@ -30,7 +35,7 @@ class CustomDataset(Dataset):
         #load images
         path = self.paths.loc[idx].path
         image = Image.open(path)
-        image = self.normalize(image)
+        image = self.transformation(image)
         # Think about augmentation like colorjitter
         
         #load labels
