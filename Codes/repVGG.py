@@ -4,13 +4,19 @@ import timm
 from torch.nn import functional as F # THIS MIGHT NOT BE NEEDED SINCE 
 from class_balanced_loss import class_balanced_loss
 from constants import BETA
+from torch.optim.lr_scheduler import CosineAnnealingLR
+import math
 
 class repVGG(pl.LightningModule):
-    def __init__(self, lr, model):
+    def __init__(self, lr, model, set_size, batch_size, num_gpus, epochs):
         super().__init__()
         self.model = timm.create_model(model, pretrained=False, num_classes = 2)
         self.learning_rate = lr
         self.save_hyperparameters()
+        self.set_size = set_size
+        self.batch_size = batch_size
+        self.num_gpus = num_gpus
+        self.epochs = epochs
         
     def forward(self, x):
         # x shape
@@ -19,7 +25,13 @@ class repVGG(pl.LightningModule):
     
     def configure_optimizers(self):
         optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
-        return optimizer
+        return {
+        'optimizer': optimizer,
+        'lr_scheduler': {
+            'scheduler': CosineAnnealingLR(optimizer, 
+                                           T_max = math.ceil(self.set_size / (self.batch_size * self.num_gpus) * self.epochs),
+             'strict': False
+            }
 
     def training_step(self, train_batch, batch_idx):
         image, label = train_batch

@@ -17,16 +17,21 @@ def train(args):
     #testloader = DataLoader(test_set, batch_size=args.batch, shuffle=False, num_workers=args.num_workers) #THIS MIGHT NOT BE NEEDED HERE
 
     # model
-    model = repVGG(args.lr, args.model)
+    model = repVGG(args.lr, args.model, len(train_set), args.batch, args.num_gpus, args.epochs)
 
     # training
     wandb_logger = WandbLogger(name=args.run_name)
-    trainer = pl.Trainer(progress_bar_refresh_rate = 50, max_epochs=1, logger=wandb_logger, gpus=1)
+    trainer = pl.Trainer(progress_bar_refresh_rate = 50, 
+                         max_epochs=1, 
+                         logger=wandb_logger, 
+                         gpus=args.num_gpus,
+                         num_nodes=args.num_nodes,
+                         accelerator='ddp')
     trainer.fit(model, trainloader, validloader)
 
     #save final model
     if model.global_rank == 0: #global_rank needed for multigpu runs
-        model_fname = 'models/model' + str(args.run_name) + '.pth'
+        model_fname = 'models/model_' + str(args.run_name) + '.pth'
         torch.save(model.state_dict(), model_fname)
         
     

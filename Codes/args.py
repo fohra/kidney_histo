@@ -15,6 +15,8 @@ parser.add_argument('--num_workers', action='store', type=int, required=False, d
 parser.add_argument('--model', action='store', type=str, required=False, default='repvgg_a2', help='Model name from timm library')
 parser.add_argument('--epochs', action='store', type=int, required=True, help='Number of epochs. REQUIRED')
 parser.add_argument('--run_name', action='store', type=str, required=True, help='Name for WandB run. REQUIRED')
+parser.add_argument('--num_gpus', action='store', type=int, required=False, default = 1, help='Number of gpus')
+parser.add_argument('--num_nodes', action='store', type=int, required=False, default = 1, help='Number of nodes')
 
 
 args = parser.parse_args()
