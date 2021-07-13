@@ -2,9 +2,9 @@ import torch
 import torch.nn.functional as F
 from constants import TRAIN_CLASS_NUM, VALID_CLASS_NUM, TEST_CLASS_NUM
 
-def class_balanced_loss(x,  y, beta, num_classes = 2, set_indicator = 0, loss = torch.nn.functional.binary_cross_entropy_with_logits):
+def calculate_loss_weights(beta = 0.9999, num_classes = 2, set_indicator = 0):
     '''
-    Calculates class balanced loss from paper Class-Balanced Loss Based on Effective Number of Samples. 
+    Calculates weights for class balanced loss from paper Class-Balanced Loss Based on Effective Number of Samples. 
     Modified from https://github.com/vandit15/Class-balanced-loss-pytorch/blob/master/class_balanced_loss.py
     
     Parameters:
@@ -29,8 +29,4 @@ def class_balanced_loss(x,  y, beta, num_classes = 2, set_indicator = 0, loss = 
     #scale scales into so that their sum is equal to num_classes
     scales = scales/torch.sum(scales) * num_classes
     
-    scales = scales[y].to(y.device)
-    
-    cb_loss = loss(x.squeeze(), y.float(), weight = scales)
-
-    return cb_loss
+    return scales

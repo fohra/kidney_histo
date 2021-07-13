@@ -4,6 +4,8 @@ from torch.utils.data import Dataset
 from PIL import Image
 from constants import MEAN, STD
 from gaussian_blur import GaussianBlur
+import torch
+import cv2
 
 
 class CustomDataset(Dataset):
@@ -17,15 +19,17 @@ class CustomDataset(Dataset):
         image (torch.Tensor): Image as torch Tensor. Shape (1,3,512,512)
         label (torch.Tensor): Label indicating if there is cancer in the picture. 1=Cancer, 0=Benign 
         '''
-        self.spot_infos = pd.read_excel(spot_dir)
+        self.spot_infos = pd.read_csv(spot_dir)
         self.paths = pd.read_csv(image_paths, usecols=['path'])
         self.transformation = t.Compose([
+                        t.ToPILImage(),
+                        t.RandomResizedCrop(224),
                         t.RandomVerticalFlip(p=0.5),
                         t.RandomHorizontalFlip(p=0.5),
                         t.ColorJitter(brightness=0.4,contrast=0.4,saturation=0.2,hue=0.1,),
                         GaussianBlur(p=0.2),
                         t.ToTensor(),
-                        t.Normalize(MEAN, STD),
+                        t.Normalize(MEAN['HBP'], STD['HBP']),
                     ])
 
     def __len__(self):
@@ -34,9 +38,9 @@ class CustomDataset(Dataset):
     def __getitem__(self, idx):
         #load images
         path = self.paths.loc[idx].path
-        image = Image.open(path)
+        image = cv2.imread(path)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = self.transformation(image)
-        # Think about augmentation like colorjitter
         
         #load labels
         #first need to find the spot where the image is from. The path contains that information
@@ -47,5 +51,6 @@ class CustomDataset(Dataset):
             label = 1
         else:
             label = 0
+        label = torch.tensor(label)
         
         return image, label
