@@ -4,12 +4,13 @@ from torch.utils.data import Dataset
 from PIL import Image
 from constants import MEAN, STD
 from gaussian_blur import GaussianBlur
+from sample_infos import sample_infos
 import torch
 import cv2
 
 
 class CustomDataset(Dataset):
-    def __init__(self, spot_dir, image_paths):
+    def __init__(self, spot_dir, num_cancer, num_benign, seed, include_edge = False, sample=False):
         '''
         Args:
         spot_dir (string): Path to excel file, that contains clinical info about the TMA spots
@@ -20,9 +21,16 @@ class CustomDataset(Dataset):
         label (torch.Tensor): Label indicating if there is cancer in the picture. 1=Cancer, 0=Benign 
         '''
         self.spot_infos = pd.read_csv(spot_dir)
-        self.paths = pd.read_csv(image_paths, usecols=['path'])
+        self.sample = sample
+        if self.sample:
+            self.spot_infos = sample_infos(infos = self.spot_infos,
+                                           num_cancer = num_cancer,
+                                           num_benign = num_benign,
+                                           seed = seed,
+                                           include_edge = include_edge
+                                          )
+        
         self.transformation = t.Compose([
-                        t.ToPILImage(),
                         t.RandomResizedCrop(224),
                         t.RandomVerticalFlip(p=0.5),
                         t.RandomHorizontalFlip(p=0.5),
@@ -33,20 +41,16 @@ class CustomDataset(Dataset):
                     ])
 
     def __len__(self):
-        return len(self.paths) 
+        return len(self.spot_infos) 
     
     def __getitem__(self, idx):
         #load images
-        path = self.paths.loc[idx].path
-        image = cv2.imread(path)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        path = self.spot_infos.loc[idx].path
+        image = Image.open(path)
         image = self.transformation(image)
         
         #load labels
-        #first need to find the spot where the image is from. The path contains that information
-        tma_slide = int(path.split('/')[5].split('_')[1].split('-')[1])
-        spot_num = int(path.split('/')[7].split('-')[1])
-        label = self.spot_infos[(self.spot_infos['TMA num'] == tma_slide) & (self.spot_infos['own'] == spot_num)].Annotation.values[0]
+        label = self.spot_infos.loc[idx].Annotation
         if label == 'Edge' or label=='Center':
             label = 1
         else:
