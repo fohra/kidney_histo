@@ -91,9 +91,25 @@ class repVGG(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         image, label = batch
         out = self.model(image)
-        loss = self.loss(out.squeeze(), label.float(), weight = self.test_loss_weights[label].to(label.device))
+        if self.class_balance:
+            loss = self.loss(out.squeeze(), label.float(), weight = self.validation_loss_weights[label].to(label.device))
+        else:
+            loss = self.loss(out.squeeze(), label.float())
         self.log('test_loss', loss)
-        return loss
+        return (out, label)
 
+    def test_epoch_end(self, test_step_outputs):
+        all_metrics = {}
+        outs = np.array([])
+        labels = np.array([])
+        for out, label in test_step_outputs:
+            # put outputs & labels into numpy array
+            outs = np.append(outs, out.squeeze().cpu().numpy())
+            labels = np.append(labels, label.squeeze().cpu().numpy())
+        # calculate metrics for all predictions
+        metrics = calculate_metrics(outs, labels)
+        all_metrics.update(metrics)
+        self.log_dict(all_metrics, sync_dist=True)
+        
 if __name__ == '__main__':
     print('jotain testailua')

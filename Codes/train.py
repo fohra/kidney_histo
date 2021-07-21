@@ -26,6 +26,7 @@ def train(args):
                               num_benign = args.num_benign,
                               seed = args.seed,
                               include_edge = args.include_edge,
+                              sample_val = args.sample_val
                              )
     
     trainloader = DataLoader(train_set, batch_size=args.batch, shuffle=True, num_workers=args.num_workers, drop_last=True)

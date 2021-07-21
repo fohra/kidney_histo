@@ -26,7 +26,8 @@ parser.add_argument('--limit_batch', action='store', type=float, required=False,
 
 parser.add_argument('--class_balance', action='store', type=bool, required=False, default = False, help='Whether to use class balanced loss')
 parser.add_argument('--include_edge', action='store', type=bool, required=False, default = False, help='Whether to include edges into training')
-parser.add_argument('--sample', action='store', type=bool, required=False, default = False, help='Whether to sample images. If true samples num_cancer and num_benign amount of images.')
+parser.add_argument('--sample', action='store', type=bool, required=False, default = True, help='Whether to sample images. If true samples num_cancer and num_benign amount of images.')
+parser.add_argument('--sample_val', action='store', type=bool, required=False, default = False, help='Whether to sample validation images.')
 
 
 parser.add_argument('--num_cancer', action='store', type=int, required=False, default=34201, help='Number of cancer images to use')

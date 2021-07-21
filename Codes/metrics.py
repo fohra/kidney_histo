@@ -22,7 +22,7 @@ def calculate_metrics(preds, targets):
                                       pos_label=0, zero_division=0)
     pos_recall = metrics.recall_score(targets, binary_preds, 
                                       pos_label=1, zero_division=0)
-    if targets.sum() > 0:
+    if (targets.sum() > 0) and not (targets.sum() == len(targets)):
         auroc = metrics.roc_auc_score(targets, preds)
     else:
         auroc = 0
