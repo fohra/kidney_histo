@@ -11,29 +11,27 @@ from adjust_LR import adjust_LR
 from metrics import calculate_metrics
 
 class repVGG(pl.LightningModule):
-    def __init__(self, lr, model, set_size, batch_size, num_gpus, num_nodes, epochs, limit_batches, class_balance, pre_train):
+    def __init__(self, lr, model, batch_size, epochs, limit_batches, class_balance, pre_train, num_images, num_images_val):
         super().__init__()
         self.model = timm.create_model(model, pretrained=pre_train, num_classes = 1)
         self.learning_rate = adjust_LR(lr,batch_size)
         self.save_hyperparameters()
         self.batch_size = batch_size
-        self.num_gpus = num_gpus
-        self.num_nodes = num_nodes
         self.epochs = epochs
         self.class_balance = class_balance
         if limit_batches==1:
-            self.train_loss_weights = calculate_loss_weights(TRAIN_CLASS_NUM)
-            self.validation_loss_weights = calculate_loss_weights(VALID_CLASS_NUM)
+            self.train_loss_weights = calculate_loss_weights(num_images, beta = (sum(num_images)-1)/sum(num_images))
+            
         
         elif limit_batches<1:
-            self.train_loss_weights = calculate_loss_weights(limit_batches*np.array(TRAIN_CLASS_NUM))
-            self.validation_loss_weights = calculate_loss_weights(limit_batches*np.array(VALID_CLASS_NUM))
+            self.train_loss_weights = calculate_loss_weights(limit_batches*np.array(num_images), 
+                                                             beta=(limit_batches*sum(num_images)-1)/(limit_batches*sum(num_images)))
         
         elif limit_batches>1: 
-            self.train_loss_weights = calculate_loss_weights(limit_batches* batch_size *np.array([0.2,0.8]))
-            self.validation_loss_weights = calculate_loss_weights(limit_batches* batch_size *np.array([0.2,0.8]))
+            self.train_loss_weights = calculate_loss_weights(limit_batches* batch_size *np.array([0.2,0.8]),
+                                                            beta=(limit_batches* batch_size-1)/(limit_batches* batch_size))
         
-        self.set_size = set_size 
+        self.validation_loss_weights = calculate_loss_weights(num_images_val, beta = (sum(num_images_val)-1)/sum(num_images_val))
         self.test_loss_weights = calculate_loss_weights(TEST_CLASS_NUM) 
         self.loss = torch.nn.functional.binary_cross_entropy_with_logits
         

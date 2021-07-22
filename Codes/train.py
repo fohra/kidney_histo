@@ -7,6 +7,8 @@ from torch.utils.data import DataLoader
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import LearningRateMonitor
+from pytorch_lightning.plugins import DDPPlugin
+
 
 def train(args):
     # set seed for ddp
@@ -18,14 +20,16 @@ def train(args):
                               num_benign = args.num_benign,
                               seed = args.seed,
                               include_edge = args.include_edge,
+                              include_center=args.include_center,
                               sample = args.sample
                              )
     
     valid_set = CustomDataset(spot_dir = args.valid_spot_dir,
-                              num_cancer = args.num_cancer,
-                              num_benign = args.num_benign,
+                              num_cancer = args.num_cancer_val,
+                              num_benign = args.num_benign_val,
                               seed = args.seed,
                               include_edge = args.include_edge,
+                              include_center=args.include_center,
                               sample_val = args.sample_val
                              )
     
@@ -35,18 +39,17 @@ def train(args):
     # model lr, model, set_size, batch_size, num_gpus, epochs, limit_batches, class_balance
     model = repVGG(lr = args.lr, 
                    model = args.model, 
-                   set_size = len(trainloader), 
-                   batch_size = args.batch, 
-                   num_gpus = args.num_gpus, 
-                   num_nodes = args.num_nodes,
+                   batch_size = args.batch,
                    epochs = args.epochs, 
                    limit_batches = args.limit_batch, 
                    class_balance = args.class_balance,
-                   pre_train = args.pre_train
+                   pre_train = args.pre_train,
+                   num_images = train_set.get_num_images(),
+                   num_images_val = valid_set.get_num_images()
                   )
 
     # training
-    wandb_logger = WandbLogger(name=args.run_name, project = args.project_name)
+    wandb_logger = WandbLogger(name=args.run_name, project = args.project_name, save_dir=args.output_wandb)
     lr_monitor = LearningRateMonitor(logging_interval='epoch')
     
     trainer = pl.Trainer(progress_bar_refresh_rate = 25, 
@@ -56,7 +59,9 @@ def train(args):
                          num_nodes=args.num_nodes,
                          limit_train_batches=args.limit_batch,
                          callbacks=[lr_monitor],
-                         accelerator='ddp')
+                         accelerator='ddp',
+                         plugins=DDPPlugin(find_unused_parameters=False),
+                        )
     
     trainer.fit(model, trainloader, validloader)
 

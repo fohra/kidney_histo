@@ -26,14 +26,19 @@ parser.add_argument('--limit_batch', action='store', type=float, required=False,
 
 parser.add_argument('--class_balance', action='store', type=bool, required=False, default = False, help='Whether to use class balanced loss')
 parser.add_argument('--include_edge', action='store', type=bool, required=False, default = False, help='Whether to include edges into training')
-parser.add_argument('--sample', action='store', type=bool, required=False, default = True, help='Whether to sample images. If true samples num_cancer and num_benign amount of images.')
+parser.add_argument('--include_center', action='store', type=bool, required=False, default = True, help='Whether to include centers into training')
+parser.add_argument('--sample', action='store', type=bool, required=False, default = False, help='Whether to sample images. If true samples num_cancer and num_benign amount of images.')
 parser.add_argument('--sample_val', action='store', type=bool, required=False, default = False, help='Whether to sample validation images.')
 
 
 parser.add_argument('--num_cancer', action='store', type=int, required=False, default=34201, help='Number of cancer images to use')
 parser.add_argument('--num_benign', action='store', type=int, required=False, default=17969, help='Number of cancer images to use')
+parser.add_argument('--num_cancer_val', action='store', type=int, required=False, default=4976, help='Number of cancer images to use in validation')
+parser.add_argument('--num_benign_val', action='store', type=int, required=False, default=2654, help='Number of cancer images to use in validation')
 
 parser.add_argument('--pre_train', action='store', type=bool, required=False, default = False, help='Whether to use pre_trained network as initialization.')
+parser.add_argument('--output_wandb', action='store', type=str, required=False, default = '/data/models/kidney/wandb/', help='Where to save wand logs')
+
 
 args = parser.parse_args()
 

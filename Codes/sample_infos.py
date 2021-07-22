@@ -1,6 +1,6 @@
 import pandas as pd
 
-def sample_infos(infos, num_cancer, num_benign, seed, include_edge = False):
+def sample_infos(infos, num_cancer, num_benign, seed, include_edge = False, include_center=True):
     '''Sample images based on the desired ratio
     infos (pandas DataFrame):
         DataFrame containing image paths and infos
@@ -10,6 +10,8 @@ def sample_infos(infos, num_cancer, num_benign, seed, include_edge = False):
         How many benign images is sampled 
     include_edge (bool):
         Whether to include edge spots as cancer
+    include_center (bool):
+        Whether to include center spots as cancer
         
     Returns:
         cancer paths
@@ -17,8 +19,10 @@ def sample_infos(infos, num_cancer, num_benign, seed, include_edge = False):
         DataFrame
     '''
     # Separate cancer and benign infos
-    if include_edge:
+    if include_edge & include_center:
         cancer = infos[(infos['Annotation']=='Center') | (infos['Annotation']=='Edge')].copy()
+    elif include_edge:
+        cancer = infos[infos['Annotation']=='Edge'].copy()
     else:
         cancer = infos[infos['Annotation']=='Center'].copy()
     benign = infos[infos['Annotation']=='Normal'].copy()
@@ -29,11 +33,11 @@ def sample_infos(infos, num_cancer, num_benign, seed, include_edge = False):
                         '. Number of cancer images: '+str(len(cancer)))
         
     #if one too large
-    if num_cancer > len(cancer):
+    elif num_cancer > len(cancer):
         raise Exception('Not enough images in cancer set. Number of cancer images: '+str(len(cancer)))
         
     #if other too large
-    if num_benign > len(benign):
+    elif num_benign > len(benign):
         raise Exception('Not enough images in benign set. Number of benign images: '+str(len(benign)))
     
     #suffle

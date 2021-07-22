@@ -13,10 +13,14 @@ STD = {'HBP' : [0.22521308, 0.24468836, 0.13823602]}
 
 NUM_IMAGES = {'HBP' : [12399, 23291, 86388]}
 
+#THESE ARE NOT NEEDED
 #Checked. These are for sets that include edges to cancer label
-TRAIN_CLASS_NUM = [17969, 68419] 
+#TRAIN_CLASS_NUM = [17969, 68419] 
 VALID_CLASS_NUM = [2654, 9745]
 TEST_CLASS_NUM = [5066, 18225]
+
+#New train class balance. Edges classified as edges or normal images using trained classifier
+TRAIN_CLASS_NUM = [20886, 63625] 
 
 BETA = 0.9999
 

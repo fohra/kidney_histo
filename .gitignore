@@ -132,4 +132,4 @@ dmypy.json
 Codes/*.ipynb
 Codes/*.txt
 Codes/wandb/
-
+Codes/lightning_logs/
