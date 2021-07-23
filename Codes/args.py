@@ -38,7 +38,7 @@ parser.add_argument('--num_benign_val', action='store', type=int, required=False
 
 parser.add_argument('--pre_train', action='store', type=bool, required=False, default = False, help='Whether to use pre_trained network as initialization.')
 parser.add_argument('--output_wandb', action='store', type=str, required=False, default = '/data/models/kidney/wandb/', help='Where to save wand logs')
-
+parser.add_argument('--early_patience', action='store', type=int, required=False, default = 1000, help='Early stopping patience. Tells how many epochs to train with no improvement.')
 
 args = parser.parse_args()
 

@@ -8,6 +8,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.plugins import DDPPlugin
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 
 
 def train(args):
@@ -52,13 +53,19 @@ def train(args):
     wandb_logger = WandbLogger(name=args.run_name, project = args.project_name, save_dir=args.output_wandb)
     lr_monitor = LearningRateMonitor(logging_interval='epoch')
     
+    early_stop_callback = EarlyStopping(
+       monitor='acc_bal',
+       patience=args.early_patience,
+       mode = 'max'
+    )
+    
     trainer = pl.Trainer(progress_bar_refresh_rate = 25, 
                          max_epochs=args.epochs, 
                          logger=wandb_logger, 
                          gpus=args.num_gpus,
                          num_nodes=args.num_nodes,
                          limit_train_batches=args.limit_batch,
-                         callbacks=[lr_monitor],
+                         callbacks=[lr_monitor, early_stop_callback],
                          accelerator='ddp',
                          plugins=DDPPlugin(find_unused_parameters=False),
                         )

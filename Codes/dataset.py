@@ -20,7 +20,13 @@ class CustomDataset(Dataset):
         image (torch.Tensor): Image as torch Tensor. Shape (1,3,512,512)
         label (torch.Tensor): Label indicating if there is cancer in the picture. 1=Cancer, 0=Benign 
         '''
-        self.spot_infos = pd.read_csv(spot_dir)
+        if isinstance(spot_dir, str):
+            self.spot_infos = pd.read_csv(spot_dir)
+        elif isinstance(spot_dir, pd.core.frame.DataFrame):
+            self.spot_infos = spot_dir
+        else:
+            raise Exception('Wrong type for spot_dir. Pass either path to csv file or pandas Dataframe. Type was ' + str(type(spot_dir)))
+        
         if sample:
             self.spot_infos = sample_infos(infos = self.spot_infos,
                                            num_cancer = num_cancer,
