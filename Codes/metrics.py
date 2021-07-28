@@ -1,4 +1,5 @@
 from sklearn import metrics
+from sklearn.metrics import confusion_matrix
 import torch
 
 def calculate_metrics(preds, targets):
@@ -26,7 +27,7 @@ def calculate_metrics(preds, targets):
         auroc = metrics.roc_auc_score(targets, preds)
     else:
         auroc = 0
-        
+    
     results = {
         'acc': acc,
         'acc_bal': bal_acc,

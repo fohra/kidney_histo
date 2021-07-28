@@ -10,7 +10,7 @@ import cv2
 
 
 class CustomDataset(Dataset):
-    def __init__(self, spot_dir, num_cancer, num_benign, seed, include_edge = False, include_center=True, sample=False, sample_val=False):
+    def __init__(self, spot_dir, num_cancer, num_benign, seed, include_edge = False, include_center=True, sample_train=False, sample_validation=False):
         '''
         Args:
         spot_dir (string): Path to excel file, that contains clinical info about the TMA spots
@@ -27,7 +27,7 @@ class CustomDataset(Dataset):
         else:
             raise Exception('Wrong type for spot_dir. Pass either path to csv file or pandas Dataframe. Type was ' + str(type(spot_dir)))
         
-        if sample:
+        if sample_train:
             self.spot_infos = sample_infos(infos = self.spot_infos,
                                            num_cancer = num_cancer,
                                            num_benign = num_benign,
@@ -36,7 +36,7 @@ class CustomDataset(Dataset):
                                            include_center=include_center
                                           )
         
-        if sample_val:
+        if sample_validation:
             self.spot_infos = sample_infos(infos = self.spot_infos,
                                            num_cancer=num_cancer, 
                                            num_benign=num_benign,
