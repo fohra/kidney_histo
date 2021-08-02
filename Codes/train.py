@@ -29,7 +29,7 @@ def train(args):
                               num_cancer = args.num_cancer_val,
                               num_benign = args.num_benign_val,
                               seed = args.seed,
-                              include_edge = args.include_edge,
+                              include_edge = args.include_edge_val,
                               include_center=args.include_center,
                               sample_validation = args.sample_val
                              )
