@@ -109,5 +109,8 @@ class repVGG(pl.LightningModule):
         all_metrics.update(metrics)
         self.log_dict(all_metrics, sync_dist=True)
         
+    def predict_step(self, batch, batch_idx: int, dataloader_idx: int = None):
+        return self.forward(batch)
+        
 if __name__ == '__main__':
     print('jotain testailua')
