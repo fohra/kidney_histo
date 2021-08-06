@@ -1,4 +1,4 @@
-from dataset import CustomDataset
+from dataset_relapse import CustomDataset
 from constants import NUM_IMAGES
 from repVGG import repVGG
 import torch
