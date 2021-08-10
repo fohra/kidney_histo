@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --nodes=4                           # Number of nodes
+#SBATCH --nodes=1                           # Number of nodes
 #SBATCH --gres=gpu:4                        # Number of gpus
 #SBATCH --ntasks-per-node=4                 # Same as above
 #SBATCH --cpus-per-task=14                  # We have 56 cpus per node so 14.
@@ -11,4 +11,4 @@
 echo Conda environent = $CONDA_DEFAULT_ENV
 
 # $@ collects everything you pass onto the sbatch. See the example below
-srun python3 -u /data/kidney/kidney_histo/Relapse_classifier/$@ --num_gpus 4 --num_nodes 4
+srun python3 -u /data/kidney/kidney_histo/Relapse_classifier/$@ --num_gpus 4 --num_nodes 1

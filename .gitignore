@@ -137,3 +137,4 @@ Relapse_classifier/*.ipynb
 Relapse_classifier/*.txt
 Relapse_classifier/wandb/
 Relapse_classifier/lightning_logs/
+Cancer_classifier/Images/*
