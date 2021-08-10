@@ -1,4 +1,4 @@
-from dataset_relapse import CustomDataset
+from dataset import CustomDataset
 from constants import NUM_IMAGES
 from repVGG import repVGG
 import torch
@@ -22,8 +22,9 @@ def train(args):
                               seed = args.seed,
                               include_edge = args.include_edge,
                               include_center=args.include_center,
-                              sample_train = args.sample
-                             )
+                              sample_train = args.sample,
+                              train_relapse = args.relapse_train
+                             ) 
     
     valid_set = CustomDataset(spot_dir = args.valid_spot_dir,
                               num_cancer = args.num_cancer_val,
@@ -31,7 +32,8 @@ def train(args):
                               seed = args.seed,
                               include_edge = args.include_edge_val,
                               include_center=args.include_center,
-                              sample_validation = args.sample_val
+                              sample_validation = args.sample_val,
+                              train_relapse = args.relapse_train
                              )
     
     trainloader = DataLoader(train_set, batch_size=args.batch, shuffle=True, num_workers=args.num_workers, drop_last=True)
@@ -88,7 +90,7 @@ def train(args):
     
     #save final model
     if model.global_rank == 0: #global_rank needed for multigpu runs???
-        model_fname = '/data/models/kidney/' + str(args.run_name) + '.pth'
+        model_fname = '/data/atte/models/' + str(args.run_name) + '.pth'
         torch.save(model.state_dict(), model_fname)
         
     

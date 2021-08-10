@@ -9,11 +9,19 @@ import torch
 
 
 class CustomDataset(Dataset):
-    def __init__(self, spot_dir, num_cancer, num_benign, seed, include_edge = False, include_center=True, sample_train=False, sample_validation=False, prediction=False):
+    def __init__(self, spot_dir, num_cancer, num_benign, seed, include_edge = False, include_center=True, sample_train=False, sample_validation=False, prediction=False, train_relapse = False):
         '''
         Args:
-        spot_dir (string): Path to excel file, that contains clinical info about the TMA spots
-        pt_model (string): Metadata csv file from Histoprep, that contains only valid images for training and testing
+        spot_dir (string/pandas Dataframe): Path to excel file(or the file itself), that contains clinical info about the TMA spots
+        num_cancer (int): Number of cancer images
+        num_benign (int): Number of benign images
+        seed (int): seed for sampling images
+        include_edge (boolean): Whether to include edge spots during sampling. Note needs sampling flag True in order to work
+        include_center (boolean): Whether to include center spots during sampling. Note needs sampling flag True in order to work
+        sample_train (boolean): Whether to sample a subset of training data
+        sample_validation (boolean): Whether to sample a subset of validation data
+        prediction (boolean): If True uses fewer transformations. Used while predicting.
+        relapse_train (boolean): Whether to train a classifier on relapse data.
         
         Outputs:
         image (torch.Tensor): Image as torch Tensor. Shape (1,3,512,512)
@@ -27,6 +35,7 @@ class CustomDataset(Dataset):
             raise Exception('Wrong type for spot_dir. Pass either path to csv file or pandas Dataframe. Type was ' + str(type(spot_dir)))
         
         self.pred = prediction
+        self.relapse = train_relapse
         if sample_train:
             self.spot_infos = sample_infos(infos = self.spot_infos,
                                            num_cancer = num_cancer,
@@ -45,17 +54,30 @@ class CustomDataset(Dataset):
                                            include_center=include_center
                                           )
         if self.pred:
-            self.num_benign = 0 # not used in prediction
-            self.num_cancer = 0
+            self.num_class_zero = 0 # not used in prediction
+            self.num_class_one = 0
         else:
-            self.num_benign = len(self.spot_infos[self.spot_infos['Annotation'] == 'Normal'])
-            self.num_cancer = len(self.spot_infos[(self.spot_infos['Annotation'] == 'Center') | (self.spot_infos['Annotation'] == 'Edge')])
+            if self.relapse:
+                self.num_class_zero = len(self.spot_infos[self.spot_infos['relapse'] == False])
+                self.num_class_one = len(self.spot_infos[self.spot_infos['relapse'] == True])
+            else:
+                self.num_class_zero = len(self.spot_infos[self.spot_infos['Annotation'] == 'Normal'])
+                self.num_class_one = len(self.spot_infos[(self.spot_infos['Annotation'] == 'Center') | (self.spot_infos['Annotation'] == 'Edge')]) 
+        
+        # CHOOSE WHICH MEAN
+        if self.relapse:
+            means = MEAN['TMA_WSI']
+            stds = STD['TMA_WSI']
+        else:
+            means = MEAN['HBP']
+            stds = STD['HBP']
+        
         
         if self.pred:
             self.transformation = t.Compose([
                             t.Resize(224),
                             t.ToTensor(),
-                            t.Normalize(MEAN['HBP'], STD['HBP']),
+                            t.Normalize(means, stds),
                         ])
         else:
             self.transformation = t.Compose([
@@ -65,7 +87,7 @@ class CustomDataset(Dataset):
                             t.ColorJitter(brightness=0.4,contrast=0.4,saturation=0.2,hue=0.1,),
                             GaussianBlur(p=0.2),
                             t.ToTensor(),
-                            t.Normalize(MEAN['HBP'], STD['HBP']),
+                            t.Normalize(means, stds),
                         ])
 
     def __len__(self):
@@ -77,15 +99,22 @@ class CustomDataset(Dataset):
         image = Image.open(path)
         image = self.transformation(image)
         
+        #load labels 
         if self.pred:
-            label = 0 # not used in prediction
+            label = 0 # not used while predicting
         else:
-            #load labels
-            label = self.spot_infos.loc[idx].Annotation
-            if label == 'Edge' or label=='Center':
-                label = 1
+            if self.relapse:
+                label = self.spot_infos.loc[idx].relapse
+                if label == True:
+                    label = 1
+                else:
+                    label = 0
             else:
-                label = 0
+                label = self.spot_infos.loc[idx].Annotation
+                if label == 'Edge' or label=='Center':
+                    label = 1
+                else:
+                    label = 0
         
         label = torch.tensor(label)
         
@@ -95,4 +124,4 @@ class CustomDataset(Dataset):
         '''
         Returns a list separating number of benign and cancer images for calculating class balanced loss
         '''
-        return [self.num_benign, self.num_cancer]
+        return [self.num_class_zero, self.num_class_one]

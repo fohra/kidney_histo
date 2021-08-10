@@ -7,9 +7,13 @@ VALID_CLASS_NUM (list): List of class sizes (benign, cancer) in validation set
 BETA (float): Beta value for class_balanced loss
 '''
 
-MEAN = {'HBP' : [0.67607963, 0.55976693, 0.7969368 ]}
+MEAN = {'HBP' : [0.67607963, 0.55976693, 0.7969368 ],
+        'TMA_WSI' : [0.81415012, 0.63717485, 0.79748713]
+       }
 
-STD = {'HBP' : [0.22521308, 0.24468836, 0.13823602]}
+STD = {'HBP' : [0.22521308, 0.24468836, 0.13823602],
+       'TMA_WSI' : [0.15317514, 0.20072045, 0.130039]
+      }
 
 NUM_IMAGES = {'HBP' : [12399, 23291, 86388]}
 

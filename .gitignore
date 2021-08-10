@@ -129,12 +129,11 @@ dmypy.json
 .pyre/
 
 #Don't push jupyter notebooks or text files in Codes folder
-Cancer_classifier/*.ipynb
-Cancer_classifier/*.txt
-Cancer_classifier/wandb/
-Cancer_classifier/lightning_logs/
-Relapse_classifier/*.ipynb
-Relapse_classifier/*.txt
-Relapse_classifier/wandb/
-Relapse_classifier/lightning_logs/
-Cancer_classifier/Images/*
+Classifier/*.ipynb
+Classifier/*.txt
+Classifier/wandb/
+Classifier/lightning_logs/
+Classifier/Images/*
+Classifier/models/*
+Classifier/logs/*
+
