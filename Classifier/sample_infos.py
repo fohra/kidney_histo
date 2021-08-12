@@ -14,8 +14,6 @@ def sample_infos(infos, num_cancer, num_benign, seed, include_edge = False, incl
         Whether to include center spots as cancer
         
     Returns:
-        cancer paths
-        benign paths
         DataFrame
     '''
     # Separate cancer and benign infos
@@ -28,7 +26,7 @@ def sample_infos(infos, num_cancer, num_benign, seed, include_edge = False, incl
     benign = infos[infos['Annotation']=='Normal'].copy()
     
     #if both too large
-    if num_cancer > len(cancer) & num_benign > len(benign):
+    if (num_cancer > len(cancer)) & (num_benign > len(benign)):
         raise Exception('Not enough images in cancer and benign sets. Number of benign images: '+str(len(benign))+
                         '. Number of cancer images: '+str(len(cancer)))
         

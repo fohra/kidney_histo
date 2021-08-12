@@ -38,10 +38,11 @@ parser.add_argument('--num_cancer_val', action='store', type=int, required=False
 parser.add_argument('--num_benign_val', action='store', type=int, required=False, default=2654, help='Number of cancer images to use in validation')
 
 parser.add_argument('--pre_train', action='store', type=bool, required=False, default = False, help='Whether to use pre_trained network as initialization.')
-parser.add_argument('--output_wandb', action='store', type=str, required=False, default = '/data/atte/models/wandb/', help='Where to save wand logs')
-parser.add_argument('--filename_check', action='store', type=str, required=True, help='Filename for checkpoints')
+parser.add_argument('--output_wandb', action='store', type=str, required=False, default = '/data/atte/models/wandb/', help='Where to save wandb logs')
+parser.add_argument('--filename_check', action='store', type=str, required=False, help='Filename for checkpoints')
 parser.add_argument('--early_patience', action='store', type=int, required=False, default = 1000, help='Early stopping patience. Tells how many epochs to train with no improvement.')
 parser.add_argument('--relapse_train', action='store', type=bool, required=False, default = False, help='Whether to train a relapse classifier.')
+parser.add_argument('--mean_std', action='store', type=str, required=False, default = 'HBP', help='Tells, which means and stds to use in normalization. Options: HBP, TMA_WSI')
 
 args = parser.parse_args()
 

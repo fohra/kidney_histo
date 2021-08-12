@@ -11,4 +11,4 @@
 echo Conda environent = $CONDA_DEFAULT_ENV
 
 # $@ collects everything you pass onto the sbatch. See the example below
-srun python3 -u /data/atte/kidney_histo/Relapse_classifier/$@ --num_gpus 4 --num_nodes 1
+srun python3 -u /data/atte/kidney_histo/Classifier/$@ --num_gpus 4 --num_nodes 1

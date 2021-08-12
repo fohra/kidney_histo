@@ -23,7 +23,8 @@ def train(args):
                               include_edge = args.include_edge,
                               include_center=args.include_center,
                               sample_train = args.sample,
-                              train_relapse = args.relapse_train
+                              train_relapse = args.relapse_train,
+                              norm_mean_std = args.mean_std
                              ) 
     
     valid_set = CustomDataset(spot_dir = args.valid_spot_dir,
@@ -33,7 +34,8 @@ def train(args):
                               include_edge = args.include_edge_val,
                               include_center=args.include_center,
                               sample_validation = args.sample_val,
-                              train_relapse = args.relapse_train
+                              train_relapse = args.relapse_train,
+                              norm_mean_std = args.mean_std
                              )
     
     trainloader = DataLoader(train_set, batch_size=args.batch, shuffle=True, num_workers=args.num_workers, drop_last=True)
@@ -66,8 +68,8 @@ def train(args):
     #Checkpoint save the best models
     checkpoint_callback = ModelCheckpoint(
         monitor='acc_bal',
-        dirpath=args.output_wandb+ args.filename_check,
-        filename= args.filename_check + '-{epoch:02d}-{acc_bal:.2f}',
+        dirpath=args.output_wandb+ args.run_name,
+        filename= args.run_name + '-{epoch:02d}-{acc_bal:.2f}',
         save_top_k=3,
         mode='max',
     )
