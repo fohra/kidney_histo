@@ -6,6 +6,8 @@ from constants import MEAN, STD
 from gaussian_blur import GaussianBlur
 from sample_infos import sample_infos
 import torch
+import simplejpeg
+import numpy as np
 
 
 class CustomDataset(Dataset):
@@ -75,16 +77,18 @@ class CustomDataset(Dataset):
         
         if self.pred:
             self.transformation = t.Compose([
-                            t.Resize(224),
                             t.ToTensor(),
+                            t.Resize(224),
                             t.Normalize(means, stds),
                         ])
         else:
             self.transformation = t.Compose([
+                            t.ToTensor(),
                             t.RandomResizedCrop(224),
                             t.RandomVerticalFlip(p=0.5),
                             t.RandomHorizontalFlip(p=0.5),
                             t.ColorJitter(brightness=0.4,contrast=0.4,saturation=0.2,hue=0.1,),
+                            t.ToPILImage(),
                             GaussianBlur(p=0.2),
                             t.ToTensor(),
                             t.Normalize(means, stds),
@@ -96,7 +100,13 @@ class CustomDataset(Dataset):
     def __getitem__(self, idx):
         #load images
         path = self.spot_infos.loc[idx].path
-        image = Image.open(path)
+        #image = Image.open(path)
+        #CODE FROM jopo666
+        with open(path, 'rb') as f:
+            image_bytes = np.frombuffer(f.read(), dtype='uint8')
+        image = simplejpeg.decode_jpeg(image_bytes, colorspace='RGB')
+        #CODE FROM jopo666 ends
+        
         image = self.transformation(image)
         
         #load labels 
