@@ -19,6 +19,8 @@ def train(args):
     train_set = CustomDataset(spot_dir = args.train_spot_dir,
                               num_cancer = args.num_cancer,
                               num_benign = args.num_benign,
+                              num_relapse=args.num_relapse, 
+                              num_non_relapse=args.num_non_relapse,
                               seed = args.seed,
                               include_edge = args.include_edge,
                               include_center=args.include_center,

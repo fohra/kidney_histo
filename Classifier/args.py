@@ -36,6 +36,8 @@ parser.add_argument('--num_cancer', action='store', type=int, required=False, de
 parser.add_argument('--num_benign', action='store', type=int, required=False, default=17969, help='Number of cancer images to use')
 parser.add_argument('--num_cancer_val', action='store', type=int, required=False, default=4976, help='Number of cancer images to use in validation')
 parser.add_argument('--num_benign_val', action='store', type=int, required=False, default=2654, help='Number of cancer images to use in validation')
+parser.add_argument('--num_relapse', action='store', type=int, required=False, default=36260, help='Number of cancer images to use')
+parser.add_argument('--num_non_relapse', action='store', type=int, required=False, default=50128, help='Number of cancer images to use')
 
 parser.add_argument('--pre_train', action='store', type=bool, required=False, default = False, help='Whether to use pre_trained network as initialization.')
 parser.add_argument('--output_wandb', action='store', type=str, required=False, default = '/data/atte/models/wandb/', help='Where to save wandb logs')

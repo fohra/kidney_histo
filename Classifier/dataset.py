@@ -9,7 +9,7 @@ import torch
 
 
 class CustomDataset(Dataset):
-    def __init__(self, spot_dir, num_cancer, num_benign, seed, include_edge = False, include_center=True, sample_train=False, sample_validation=False, prediction=False, train_relapse = False, norm_mean_std = 'HBP'):
+    def __init__(self, spot_dir, num_cancer, num_benign, seed, num_relapse=0, num_non_relapse=0, include_edge = False, include_center=True, sample_train=False, sample_validation=False, prediction=False, train_relapse = False, norm_mean_std = 'HBP'):
         '''
         Args:
         spot_dir (string/pandas Dataframe): Path to excel file(or the file itself), that contains clinical info about the TMA spots
@@ -42,7 +42,9 @@ class CustomDataset(Dataset):
                                            num_benign = num_benign,
                                            seed = seed,
                                            include_edge = include_edge,
-                                           include_center=include_center
+                                           include_center=include_center,
+                                           num_relapse=num_relapse, 
+                                           num_non_relapse=num_non_relapse
                                           )
         
         if sample_validation:
@@ -51,7 +53,9 @@ class CustomDataset(Dataset):
                                            num_benign=num_benign,
                                            seed = seed,
                                            include_edge = include_edge,
-                                           include_center=include_center
+                                           include_center=include_center,
+                                           num_relapse=num_relapse, 
+                                           num_non_relapse=num_non_relapse
                                           )
         if self.pred:
             self.num_class_zero = 0 # not used in prediction
