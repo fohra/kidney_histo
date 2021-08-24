@@ -135,5 +135,5 @@ Classifier/wandb/
 Classifier/lightning_logs/
 Classifier/Images/*
 Classifier/models/*
-Classifier/logs/*
+logs/*
 

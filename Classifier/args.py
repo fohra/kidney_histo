@@ -8,15 +8,16 @@ parser.add_argument('--lr', action='store', type=float, required=False, default=
 parser.add_argument('--seed', action='store', type=int, required=False, default=1442, help='Seed for splitting data')
 parser.add_argument('--batch', action='store', type=int, required=False, default=128, help='Batch size')
 
-parser.add_argument('--train_spot_dir', action='store', type=str, required=False, default='/data/datasets/RCC/HE_cut/train_infos.csv'
-                    , help='Path to excel file containing information about train spots')
-parser.add_argument('--valid_spot_dir', action='store', type=str, required=False, default='/data/datasets/RCC/HE_cut/valid_infos.csv'
-                    , help='Path to excel file containing information about validation spots')
-parser.add_argument('--test_spot_dir', action='store', type=str, required=False, default='/data/datasets/RCC/HE_cut/test_infos.csv'
-                    , help='Path to excel file containing information about test spots')
+parser.add_argument('--train_spot_dir', action='store', type=str, required=False, default='/data/datasets/RCC/HE_cut/train_infos.csv', help='Path to excel file containing information about train spots')
+
+parser.add_argument('--train_wsi_spot_dir', action='store', type=str, required=False, default='/data/atte/confident1%_train_only_wsi_labels_ids.csv', help='Path to excel file containing information about WSI train spots')
+
+parser.add_argument('--valid_spot_dir', action='store', type=str, required=False, default='/data/datasets/RCC/HE_cut/valid_infos.csv', help='Path to excel file containing information about validation spots')
+
+parser.add_argument('--test_spot_dir', action='store', type=str, required=False, default='/data/datasets/RCC/HE_cut/test_infos.csv', help='Path to excel file containing information about test spots')
 
 parser.add_argument('--num_workers', action='store', type=int, required=False, default=8, help='Number of workers for loading data')
-parser.add_argument('--model', action='store', type=str, required=False, default='repvgg_b1g4', help='Model name from timm library')
+parser.add_argument('--model', action='store', type=str, required=False, default='resnet50', help='Model name from timm library')
 parser.add_argument('--epochs', action='store', type=int, required=True, help='Number of epochs. REQUIRED')
 parser.add_argument('--run_name', action='store', type=str, required=True, help='Name for WandB run. REQUIRED')
 parser.add_argument('--project_name', action='store', type=str, required=False, default = 'dippa', help='Name for WandB project')
@@ -34,10 +35,15 @@ parser.add_argument('--sample_val', action='store', type=bool, required=False, d
 
 parser.add_argument('--num_cancer', action='store', type=int, required=False, default=34201, help='Number of cancer images to use')
 parser.add_argument('--num_benign', action='store', type=int, required=False, default=17969, help='Number of cancer images to use')
+
+parser.add_argument('--num_cancer_wsi', action='store', type=int, required=False, default=1385648, help='Number of cancer images to use')
+parser.add_argument('--num_benign_wsi', action='store', type=int, required=False, default=267239, help='Number of cancer images to use')
+
 parser.add_argument('--num_cancer_val', action='store', type=int, required=False, default=4976, help='Number of cancer images to use in validation')
 parser.add_argument('--num_benign_val', action='store', type=int, required=False, default=2654, help='Number of cancer images to use in validation')
-parser.add_argument('--num_relapse', action='store', type=int, required=False, default=36260, help='Number of cancer images to use')
-parser.add_argument('--num_non_relapse', action='store', type=int, required=False, default=50128, help='Number of cancer images to use')
+
+parser.add_argument('--num_relapse', action='store', type=int, required=False, default=0, help='Number of cancer images to use')
+parser.add_argument('--num_non_relapse', action='store', type=int, required=False, default=0, help='Number of cancer images to use')
 
 parser.add_argument('--pre_train', action='store', type=bool, required=False, default = False, help='Whether to use pre_trained network as initialization.')
 parser.add_argument('--output_wandb', action='store', type=str, required=False, default = '/data/atte/models/wandb/', help='Where to save wandb logs')

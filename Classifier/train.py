@@ -16,11 +16,14 @@ def train(args):
     pl.seed_everything(args.seed)
     print(args.sample)
     #make dataloaders
-    train_set = CustomDataset(spot_dir = args.train_spot_dir,
+    train_set = CustomDataset(tma_spot_dir = args.train_spot_dir,
+                              wsi_spot_dir = args.train_wsi_spot_dir, 
                               num_cancer = args.num_cancer,
                               num_benign = args.num_benign,
                               num_relapse=args.num_relapse, 
                               num_non_relapse=args.num_non_relapse,
+                              num_cancer_wsi = args.num_cancer_wsi, 
+                              num_benign_wsi = args.num_benign_wsi, 
                               seed = args.seed,
                               include_edge = args.include_edge,
                               include_center=args.include_center,
@@ -29,7 +32,8 @@ def train(args):
                               norm_mean_std = args.mean_std
                              ) 
     
-    valid_set = CustomDataset(spot_dir = args.valid_spot_dir,
+    valid_set = CustomDataset(tma_spot_dir = args.valid_spot_dir,
+                              wsi_spot_dir = args.train_wsi_spot_dir,
                               num_cancer = args.num_cancer_val,
                               num_benign = args.num_benign_val,
                               seed = args.seed,

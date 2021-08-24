@@ -11,7 +11,7 @@ import numpy as np
 
 
 class CustomDataset(Dataset):
-    def __init__(self, spot_dir, num_cancer, num_benign, seed, num_relapse=0, num_non_relapse=0, include_edge = False, include_center=True, sample_train=False, sample_validation=False, prediction=False, train_relapse = False, norm_mean_std = 'HBP'):
+    def __init__(self, tma_spot_dir, wsi_spot_dir, num_cancer, num_benign, seed, num_cancer_wsi = 0, num_benign_wsi = 0, num_relapse=0, num_non_relapse=0, include_edge = False, include_center=True, sample_train=False, sample_validation=False, prediction=False, train_relapse = False, norm_mean_std = 'HBP'):
         '''
         Args:
         spot_dir (string/pandas Dataframe): Path to excel file(or the file itself), that contains clinical info about the TMA spots
@@ -29,28 +29,42 @@ class CustomDataset(Dataset):
         image (torch.Tensor): Image as torch Tensor. Shape (1,3,512,512)
         label (torch.Tensor): Label indicating if there is cancer in the picture. 1=Cancer, 0=Benign 
         '''
-        if isinstance(spot_dir, str):
-            self.spot_infos = pd.read_csv(spot_dir)
-        elif isinstance(spot_dir, pd.core.frame.DataFrame):
-            self.spot_infos = spot_dir
+        if (isinstance(tma_spot_dir, str)) & (isinstance(wsi_spot_dir, str)):
+            self.tma_spot_infos = pd.read_csv(tma_spot_dir, usecols = ['IDs', 'path', 'relapse', 'Annotation'])
+            self.wsi_spot_infos = pd.read_csv(wsi_spot_dir, usecols = ['IDs', 'path', 'relapse', 'Annotation'])
         else:
-            raise Exception('Wrong type for spot_dir. Pass either path to csv file or pandas Dataframe. Type was ' + str(type(spot_dir)))
+            raise Exception('Wrong type for spot_dirs. Pass either path to csv file or pandas Dataframe. Type was for tma ' + str(type(tma_spot_dir)) + ' and for wsi ' + str(type(wsi_spot_dir)))
         
         self.pred = prediction
         self.relapse = train_relapse
+        
         if sample_train:
-            self.spot_infos = sample_infos(infos = self.spot_infos,
+            self.tma_spot_infos = sample_infos(infos = self.tma_spot_infos,
                                            num_cancer = num_cancer,
                                            num_benign = num_benign,
                                            seed = seed,
                                            include_edge = include_edge,
                                            include_center=include_center,
-                                           num_relapse=num_relapse, 
-                                           num_non_relapse=num_non_relapse
                                           )
+            len_relapse = len(self.tma_spot_infos[self.tma_spot_infos.relapse == True])
+            len_non_relapse = len(self.tma_spot_infos[self.tma_spot_infos.relapse == False])
+            
+            self.wsi_spot_infos = sample_infos(infos = self.wsi_spot_infos,
+                                           num_cancer = num_cancer_wsi,
+                                           num_benign = num_benign_wsi,
+                                           seed = seed,
+                                           num_relapse= max(num_relapse-len_relapse,0), 
+                                           num_non_relapse=max(num_non_relapse-len_non_relapse,0)
+                                          )
+            #combine tma and wsi
+            self.spot_infos = pd.concat([self.tma_spot_infos, self.wsi_spot_infos], ignore_index=True)
+        else:
+            self.spot_infos = self.tma_spot_infos
+        
+        
         
         if sample_validation:
-            self.spot_infos = sample_infos(infos = self.spot_infos,
+            self.spot_infos = sample_infos(infos = self.tma_spot_infos,
                                            num_cancer=num_cancer, 
                                            num_benign=num_benign,
                                            seed = seed,

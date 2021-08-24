@@ -4,9 +4,10 @@
 #SBATCH --ntasks-per-node=4                 # Same as above
 #SBATCH --cpus-per-task=14                  # We have 56 cpus per node so 14.
 #SBATCH -o /data/atte/kidney_histo/logs/slurm_%j.txt      # Path to save slurm_logs (‰j is the job number).
+#SBATCH --mail-user=atte.fohr@helsinki.fi
 
-#export NCCL_DEBUG=INFO                     # Uncomment both to see actual errors that come up.
-#export PYTHONFAULTHANDLER=1
+export NCCL_DEBUG=INFO                     # Uncomment both to see actual errors that come up.
+export PYTHONFAULTHANDLER=1
 
 echo Conda environent = $CONDA_DEFAULT_ENV
 

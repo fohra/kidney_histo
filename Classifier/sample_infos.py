@@ -29,20 +29,18 @@ def sample_infos(infos, num_cancer, num_benign, seed, num_relapse=0, num_non_rel
         cancer = infos[infos['Annotation']=='Center'].copy()
     benign = infos[infos['Annotation']=='Normal'].copy()
     
-    #if both too large
+    #Raise error if not enough images in dataframes
     if (num_cancer > len(cancer)) & (num_benign > len(benign)):
         raise Exception('Not enough images in cancer and benign sets. Number of benign images: '+str(len(benign))+
                         '. Number of cancer images: '+str(len(cancer)))
-        
-    #if one too large
+    
     elif num_cancer > len(cancer):
         raise Exception('Not enough images in cancer set. Number of cancer images: '+str(len(cancer)))
-        
-    #if other too large
+    
     elif num_benign > len(benign):
         raise Exception('Not enough images in benign set. Number of benign images: '+str(len(benign)))
     
-    #suffle
+    #sample wanted number of images
     if not num_cancer == len(cancer):
         cancer = cancer.sample(n=num_cancer, random_state=seed).reset_index(drop=True)
     if not num_benign == len(benign):
@@ -54,7 +52,7 @@ def sample_infos(infos, num_cancer, num_benign, seed, num_relapse=0, num_non_rel
         relapse = ret_df[ret_df['relapse']==True].copy()
         non_relapse = ret_df[ret_df['relapse']==False].copy()
 
-        #if both too large
+        #Raise errors if dataframes are too small to sample all wanted images
         if (num_relapse > len(relapse)) & (num_non_relapse > len(non_relapse)):
             raise Exception('Not enough images in relapse and non-relapse sets. Number of non-relapse images: ' 
                             + str(len(non_relapse))+ '. Number of relapse images: '+str(len(relapse)))
@@ -65,6 +63,7 @@ def sample_infos(infos, num_cancer, num_benign, seed, num_relapse=0, num_non_rel
         elif num_non_relapse > len(non_relapse):
             raise Exception('Not enough images in non_relapse set. Number of non_relapse images: '+str(len(cancer)))
         
+        #sample wanted number of images
         if not num_relapse == len(relapse):
             relapse = relapse.sample(n=num_relapse, random_state=seed).reset_index(drop=True)
         if not num_non_relapse == len(non_relapse):
