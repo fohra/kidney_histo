@@ -24,6 +24,7 @@ parser.add_argument('--project_name', action='store', type=str, required=False, 
 parser.add_argument('--num_gpus', action='store', type=int, required=False, default = 1, help='Number of gpus')
 parser.add_argument('--num_nodes', action='store', type=int, required=False, default = 1, help='Number of nodes')
 parser.add_argument('--limit_batch', action='store', type=float, required=False, default = 1.0, help='Limit number of training and validation batches')
+parser.add_argument('--weight_decay', action='store', type=float, required=False, default = 0.00001, help='weight decay for optimizer')
 
 parser.add_argument('--class_balance', action='store', type=bool, required=False, default = False, help='Whether to use class balanced loss')
 parser.add_argument('--include_edge', action='store', type=bool, required=False, default = False, help='Whether to include edges into training')
@@ -51,6 +52,12 @@ parser.add_argument('--filename_check', action='store', type=str, required=False
 parser.add_argument('--early_patience', action='store', type=int, required=False, default = 1000, help='Early stopping patience. Tells how many epochs to train with no improvement.')
 parser.add_argument('--relapse_train', action='store', type=bool, required=False, default = False, help='Whether to train a relapse classifier.')
 parser.add_argument('--mean_std', action='store', type=str, required=False, default = 'HBP', help='Tells, which means and stds to use in normalization. Options: HBP, TMA_WSI')
+
+parser.add_argument('--prob_gaussian', action='store', type=float, required=False, default = 0.05, help='Probability for blurring images')
+
+parser.add_argument('--spectral', action='store', type=bool, required=False, default = False, help='Whether to use spectral decoupling.')
+parser.add_argument('--sd_lambda', action='store', type=float, required=False, default = 0.1, help='Lambda coefficient for spectral decoupling.')
+
 
 args = parser.parse_args()
 

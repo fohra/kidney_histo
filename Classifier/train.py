@@ -14,7 +14,7 @@ from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 def train(args):
     # set seed for ddp
     pl.seed_everything(args.seed)
-    print(args.sample)
+    
     #make dataloaders
     train_set = CustomDataset(tma_spot_dir = args.train_spot_dir,
                               wsi_spot_dir = args.train_wsi_spot_dir, 
@@ -29,7 +29,8 @@ def train(args):
                               include_center=args.include_center,
                               sample_train = args.sample,
                               train_relapse = args.relapse_train,
-                              norm_mean_std = args.mean_std
+                              norm_mean_std = args.mean_std,
+                              prob_gaussian = args.prob_gaussian
                              ) 
     
     valid_set = CustomDataset(tma_spot_dir = args.valid_spot_dir,
@@ -41,7 +42,8 @@ def train(args):
                               include_center=args.include_center,
                               sample_validation = args.sample_val,
                               train_relapse = args.relapse_train,
-                              norm_mean_std = args.mean_std
+                              norm_mean_std = args.mean_std,
+                              prob_gaussian = args.prob_gaussian
                              )
     
     trainloader = DataLoader(train_set, batch_size=args.batch, shuffle=True, num_workers=args.num_workers, drop_last=True)
@@ -56,7 +58,10 @@ def train(args):
                    class_balance = args.class_balance,
                    pre_train = args.pre_train,
                    num_images = train_set.get_num_images(),
-                   num_images_val = valid_set.get_num_images()
+                   num_images_val = valid_set.get_num_images(),
+                   w_decay= args.weight_decay,
+                   spectral= args.spectral, 
+                   sd_lambda=args.sd_lambda
                   )
 
     # Logger for training
@@ -75,7 +80,7 @@ def train(args):
     checkpoint_callback = ModelCheckpoint(
         monitor='acc_bal',
         dirpath=args.output_wandb+ args.run_name,
-        filename= args.run_name + '-{epoch:02d}-{acc_bal:.2f}',
+        filename= args.run_name + '-{epoch:02d}-{acc_bal:.4f}-{auroc:.4f}',
         save_top_k=3,
         mode='max',
     )

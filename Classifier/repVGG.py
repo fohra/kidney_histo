@@ -11,7 +11,7 @@ from adjust_LR import adjust_LR
 from metrics import calculate_metrics
 
 class repVGG(pl.LightningModule):
-    def __init__(self, lr, model, batch_size, epochs, limit_batches, class_balance, pre_train, num_images, num_images_val):
+    def __init__(self, lr, model, batch_size, epochs, limit_batches, class_balance, pre_train, num_images, num_images_val, w_decay=0.1, spectral= False, sd_lambda=0.1):
         super().__init__()
         self.model = timm.create_model(model, pretrained=pre_train, num_classes = 1)
         self.learning_rate = adjust_LR(lr,batch_size)
@@ -34,8 +34,9 @@ class repVGG(pl.LightningModule):
         self.validation_loss_weights = calculate_loss_weights(num_images_val, beta = (sum(num_images_val)-1)/sum(num_images_val))
         self.test_loss_weights = calculate_loss_weights(TEST_CLASS_NUM) 
         self.loss = torch.nn.functional.binary_cross_entropy_with_logits
-        
-        
+        self.w_decay = w_decay
+        self.spectral = spectral
+        self.Lambda = sd_lambda
         
     def forward(self, x):
         # x shape
@@ -43,7 +44,7 @@ class repVGG(pl.LightningModule):
         return x
     
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=self.w_decay)
         scheduler = {
             'scheduler': CosineAnnealingLR(optimizer, 
                                            T_max = self.epochs
@@ -56,8 +57,10 @@ class repVGG(pl.LightningModule):
     def training_step(self, train_batch, batch_idx):
         image, label = train_batch
         out = self.forward(image)
-        if self.class_balance:
-            loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[label].to(label.device))
+        if self.class_balance and self.spectral:
+            loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[label].to(label.device)) + self.Lambda * (out**2).mean()
+        elif self.spectral:
+            loss = self.loss(out.squeeze(), label.float()) + self.Lambda * (out**2).mean()
         else:
             loss = self.loss(out.squeeze(), label.float())
         self.log('train_loss', loss)
@@ -66,8 +69,10 @@ class repVGG(pl.LightningModule):
     def validation_step(self, val_batch, batch_idx):
         image, label = val_batch
         out = self.forward(image)
-        if self.class_balance:
-            loss = self.loss(out.squeeze(), label.float(), weight = self.validation_loss_weights[label].to(label.device))
+        if self.class_balance and self.spectral:
+            loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[label].to(label.device)) + self.Lambda * (out**2).mean()
+        elif self.spectral:
+            loss = self.loss(out.squeeze(), label.float()) + self.Lambda * (out**2).mean()
         else:
             loss = self.loss(out.squeeze(), label.float())
         self.log('val_loss', loss)
@@ -89,8 +94,10 @@ class repVGG(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         image, label = batch
         out = self.model(image)
-        if self.class_balance:
-            loss = self.loss(out.squeeze(), label.float(), weight = self.validation_loss_weights[label].to(label.device))
+        if self.class_balance and self.spectral:
+            loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[label].to(label.device)) + self.Lambda * (out**2).mean()
+        elif self.spectral:
+            loss = self.loss(out.squeeze(), label.float()) + self.Lambda * (out**2).mean()
         else:
             loss = self.loss(out.squeeze(), label.float())
         self.log('test_loss', loss)

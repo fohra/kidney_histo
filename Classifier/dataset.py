@@ -11,7 +11,7 @@ import numpy as np
 
 
 class CustomDataset(Dataset):
-    def __init__(self, tma_spot_dir, wsi_spot_dir, num_cancer, num_benign, seed, num_cancer_wsi = 0, num_benign_wsi = 0, num_relapse=0, num_non_relapse=0, include_edge = False, include_center=True, sample_train=False, sample_validation=False, prediction=False, train_relapse = False, norm_mean_std = 'HBP'):
+    def __init__(self, tma_spot_dir, wsi_spot_dir, num_cancer, num_benign, seed, num_cancer_wsi = 0, num_benign_wsi = 0, num_relapse=0, num_non_relapse=0, include_edge = False, include_center=True, sample_train=False, sample_validation=False, prediction=False, train_relapse = False, norm_mean_std = 'HBP', prob_gaussian=0.05):
         '''
         Args:
         spot_dir (string/pandas Dataframe): Path to excel file(or the file itself), that contains clinical info about the TMA spots
@@ -24,6 +24,7 @@ class CustomDataset(Dataset):
         sample_validation (boolean): Whether to sample a subset of validation data
         prediction (boolean): If True uses fewer transformations. Used while predicting.
         relapse_train (boolean): Whether to train a classifier on relapse data.
+        prob_gaussian (float): Probability for blurring images
         
         Outputs:
         image (torch.Tensor): Image as torch Tensor. Shape (1,3,512,512)
@@ -103,7 +104,7 @@ class CustomDataset(Dataset):
                             t.RandomHorizontalFlip(p=0.5),
                             t.ColorJitter(brightness=0.4,contrast=0.4,saturation=0.2,hue=0.1,),
                             t.ToPILImage(),
-                            GaussianBlur(p=0.2),
+                            GaussianBlur(p=prob_gaussian),
                             t.ToTensor(),
                             t.Normalize(means, stds),
                         ])
