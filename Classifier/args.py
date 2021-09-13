@@ -10,7 +10,7 @@ parser.add_argument('--batch', action='store', type=int, required=False, default
 
 parser.add_argument('--train_spot_dir', action='store', type=str, required=False, default='/data/datasets/RCC/HE_cut/train_infos.csv', help='Path to excel file containing information about train spots')
 
-parser.add_argument('--train_wsi_spot_dir', action='store', type=str, required=False, default='/data/atte/confident1%_train_only_wsi_labels_ids.csv', help='Path to excel file containing information about WSI train spots')
+parser.add_argument('--train_wsi_spot_dir', action='store', type=str, required=False, default='/data/atte/data/confident1%_train_only_wsi_labels_ids.csv', help='Path to excel file containing information about WSI train spots')
 
 parser.add_argument('--valid_spot_dir', action='store', type=str, required=False, default='/data/datasets/RCC/HE_cut/valid_infos.csv', help='Path to excel file containing information about validation spots')
 
@@ -58,6 +58,11 @@ parser.add_argument('--prob_gaussian', action='store', type=float, required=Fals
 parser.add_argument('--spectral', action='store', type=bool, required=False, default = False, help='Whether to use spectral decoupling.')
 parser.add_argument('--sd_lambda', action='store', type=float, required=False, default = 0.1, help='Lambda coefficient for spectral decoupling.')
 
+parser.add_argument('--use_SAM', action='store', type=bool, required=False, default = False, help='Whether to use Sharpness Aware Minimization optimizer(SAM).')
+parser.add_argument('--sam_rho', action='store', type=float, required=False, default = 0.05, help='Rho coefficient for Sharpness Aware Minimization optimizer(SAM).')
+
+parser.add_argument('--drop', action='store', type=float, required=False, default = 0.00, help='Dropout rate for model')
+parser.add_argument('--drop_path', action='store', type=float, required=False, default = 0.00, help='Drop path rate for model')
 
 args = parser.parse_args()
 

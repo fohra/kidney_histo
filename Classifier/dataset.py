@@ -11,7 +11,7 @@ import numpy as np
 
 
 class CustomDataset(Dataset):
-    def __init__(self, tma_spot_dir, wsi_spot_dir, num_cancer, num_benign, seed, num_cancer_wsi = 0, num_benign_wsi = 0, num_relapse=0, num_non_relapse=0, include_edge = False, include_center=True, sample_train=False, sample_validation=False, prediction=False, train_relapse = False, norm_mean_std = 'HBP', prob_gaussian=0.05):
+    def __init__(self, tma_spot_dir, wsi_spot_dir, num_cancer, num_benign, seed, num_cancer_wsi = 0, num_benign_wsi = 0, num_relapse=0, num_non_relapse=0, include_edge = False, include_center=True, sample_train=False, sample_validation=False, prediction=False, train_relapse = False, norm_mean_std = 'HBP', prob_gaussian=0.05, simple_transformation=False):
         '''
         Args:
         spot_dir (string/pandas Dataframe): Path to excel file(or the file itself), that contains clinical info about the TMA spots
@@ -37,6 +37,7 @@ class CustomDataset(Dataset):
             raise Exception('Wrong type for spot_dirs. Pass either path to csv file or pandas Dataframe. Type was for tma ' + str(type(tma_spot_dir)) + ' and for wsi ' + str(type(wsi_spot_dir)))
         
         self.pred = prediction
+        self.simple_transformation = simple_transformation
         self.relapse = train_relapse
         
         if sample_train:
@@ -90,7 +91,7 @@ class CustomDataset(Dataset):
         stds = STD[norm_mean_std]
         
         
-        if self.pred:
+        if (self.simple_transformation) or (self.pred) :
             self.transformation = t.Compose([
                             t.ToTensor(),
                             t.Resize(224),

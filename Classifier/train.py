@@ -61,7 +61,11 @@ def train(args):
                    num_images_val = valid_set.get_num_images(),
                    w_decay= args.weight_decay,
                    spectral= args.spectral, 
-                   sd_lambda=args.sd_lambda
+                   sd_lambda=args.sd_lambda, 
+                   use_SAM = args.use_SAM, 
+                   sam_rho = args.sam_rho,
+                   drop = args.drop,
+                   drop_path = args.drop_path
                   )
 
     # Logger for training
