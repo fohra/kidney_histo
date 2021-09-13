@@ -160,7 +160,8 @@ class repVGG(pl.LightningModule):
         self.log_dict(all_metrics, sync_dist=True)
         
     def predict_step(self, batch, batch_idx: int, dataloader_idx: int = None):
-        return self.forward(batch)
+        image, label = batch
+        return self.forward(image)
         
 if __name__ == '__main__':
     print('jotain testailua')
