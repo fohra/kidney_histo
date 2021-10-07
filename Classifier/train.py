@@ -1,4 +1,5 @@
 from dataset import CustomDataset
+from ValidationDataset import ValidationDataset
 from constants import NUM_IMAGES
 from repVGG import repVGG
 import torch
@@ -30,21 +31,21 @@ def train(args):
                               sample_train = args.sample,
                               train_relapse = args.relapse_train,
                               norm_mean_std = args.mean_std,
-                              prob_gaussian = args.prob_gaussian
+                              prob_gaussian = args.prob_gaussian,
+                              use_soft = args.use_soft
                              ) 
     
-    valid_set = CustomDataset(tma_spot_dir = args.valid_spot_dir,
-                              wsi_spot_dir = args.train_wsi_spot_dir,
-                              num_cancer = args.num_cancer_val,
-                              num_benign = args.num_benign_val,
-                              seed = args.seed,
-                              include_edge = args.include_edge_val,
-                              include_center=args.include_center,
-                              sample_validation = args.sample_val,
-                              train_relapse = args.relapse_train,
-                              norm_mean_std = args.mean_std,
-                              prob_gaussian = args.prob_gaussian
-                             )
+    valid_set = ValidationDataset(tma_spot_dir = args.valid_spot_dir, 
+                                  num_cancer = args.num_cancer_val, 
+                                  num_benign = args.num_benign_val, 
+                                  seed = args.seed, 
+                                  include_edge = args.include_edge_val, 
+                                  include_center=args.include_center, 
+                                  sample_validation=args.sample_val, 
+                                  train_relapse = args.relapse_train, 
+                                  norm_mean_std = args.mean_std, 
+                                  prob_gaussian=args.prob_gaussian,
+                                  use_soft=args.use_soft)
     
     trainloader = DataLoader(train_set, batch_size=args.batch, shuffle=True, num_workers=args.num_workers, drop_last=True)
     validloader = DataLoader(valid_set, batch_size=args.batch, shuffle =False, num_workers=args.num_workers)
@@ -65,7 +66,11 @@ def train(args):
                    use_SAM = args.use_SAM, 
                    sam_rho = args.sam_rho,
                    drop = args.drop,
-                   drop_path = args.drop_path
+                   drop_path = args.drop_path,
+                   use_soft = args.use_soft,
+                   use_mixup = args.use_mixup,
+                   prob_mixup = args.mixup_prob, 
+                   label_smooth = args.label_smooth
                   )
 
     # Logger for training

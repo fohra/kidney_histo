@@ -1,6 +1,6 @@
 import argparse
 
-parser = argparse.ArgumentParser(description='Train function for repVGG model', 
+parser = argparse.ArgumentParser(description='Train function for timm classifier model', 
     usage='%(prog)s [optional arguments]', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 #optional 
@@ -63,6 +63,12 @@ parser.add_argument('--sam_rho', action='store', type=float, required=False, def
 
 parser.add_argument('--drop', action='store', type=float, required=False, default = 0.00, help='Dropout rate for model')
 parser.add_argument('--drop_path', action='store', type=float, required=False, default = 0.00, help='Drop path rate for model')
+parser.add_argument('--use_soft', action='store', type=bool, required=False, default = False, help='Use soft labels')
+parser.add_argument('--use_mixup', action='store', type=bool, required=False, default = False, help='Use mixup of images and labels.')
+parser.add_argument('--mixup_prob', action='store', type=float, required=False, default = 1.0, help='Probability for mixing of images and labels.')
+parser.add_argument('--label_smooth', action='store', type=bool, required=False, default = False, help='Use label smoothing loss')
+
+
 
 args = parser.parse_args()
 

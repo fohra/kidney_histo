@@ -11,7 +11,7 @@ import numpy as np
 
 
 class CustomDataset(Dataset):
-    def __init__(self, tma_spot_dir, wsi_spot_dir, num_cancer, num_benign, seed, num_cancer_wsi = 0, num_benign_wsi = 0, num_relapse=0, num_non_relapse=0, include_edge = False, include_center=True, sample_train=False, sample_validation=False, prediction=False, train_relapse = False, norm_mean_std = 'HBP', prob_gaussian=0.05, simple_transformation=False):
+    def __init__(self, tma_spot_dir, wsi_spot_dir, num_cancer, num_benign, seed, num_cancer_wsi = 0, num_benign_wsi = 0, num_relapse=0, num_non_relapse=0, include_edge = False, include_center=True, sample_train=False, sample_validation=False, prediction=False, train_relapse = False, norm_mean_std = 'HBP', prob_gaussian=0.05, simple_transformation=False, use_soft=False):
         '''
         Args:
         spot_dir (string/pandas Dataframe): Path to excel file(or the file itself), that contains clinical info about the TMA spots
@@ -25,16 +25,26 @@ class CustomDataset(Dataset):
         prediction (boolean): If True uses fewer transformations. Used while predicting.
         relapse_train (boolean): Whether to train a classifier on relapse data.
         prob_gaussian (float): Probability for blurring images
+        simple_transformation (bool): Whether to use minimal transformations
+        use_soft (bool): Whether to use soft labels
         
         Outputs:
         image (torch.Tensor): Image as torch Tensor. Shape (1,3,512,512)
         label (torch.Tensor): Label indicating if there is cancer in the picture. 1=Cancer, 0=Benign 
         '''
-        if (isinstance(tma_spot_dir, str)) & (isinstance(wsi_spot_dir, str)):
-            self.tma_spot_infos = pd.read_csv(tma_spot_dir, usecols = ['IDs', 'path', 'relapse', 'Annotation'])
-            self.wsi_spot_infos = pd.read_csv(wsi_spot_dir, usecols = ['IDs', 'path', 'relapse', 'Annotation'])
+        self.use_soft = use_soft
+        if self.use_soft:
+            if (isinstance(tma_spot_dir, str)) & (isinstance(wsi_spot_dir, str)):
+                self.tma_spot_infos = pd.read_csv(tma_spot_dir, usecols = ['IDs', 'path', 'relapse', 'Annotation', 'probabilities'])
+                self.wsi_spot_infos = pd.read_csv(wsi_spot_dir, usecols = ['IDs', 'path', 'relapse', 'Annotation', 'probabilities'])
+            else:
+                raise Exception('Wrong type for spot_dirs. Pass either path to csv file or pandas Dataframe. Type was for tma ' + str(type(tma_spot_dir)) + ' and for wsi ' + str(type(wsi_spot_dir)))
         else:
-            raise Exception('Wrong type for spot_dirs. Pass either path to csv file or pandas Dataframe. Type was for tma ' + str(type(tma_spot_dir)) + ' and for wsi ' + str(type(wsi_spot_dir)))
+            if (isinstance(tma_spot_dir, str)) & (isinstance(wsi_spot_dir, str)):
+                self.tma_spot_infos = pd.read_csv(tma_spot_dir, usecols = ['IDs', 'path', 'relapse', 'Annotation'])
+                self.wsi_spot_infos = pd.read_csv(wsi_spot_dir, usecols = ['IDs', 'path', 'relapse', 'Annotation'])
+            else:
+                raise Exception('Wrong type for spot_dirs. Pass either path to csv file or pandas Dataframe. Type was for tma ' + str(type(tma_spot_dir)) + ' and for wsi ' + str(type(wsi_spot_dir)))
         
         self.pred = prediction
         self.simple_transformation = simple_transformation
@@ -136,15 +146,24 @@ class CustomDataset(Dataset):
                 else:
                     label = 0
             else:
-                label = self.spot_infos.loc[idx].Annotation
-                if label == 'Edge' or label=='Center':
-                    label = 1
+                if self.use_soft:
+                    if not np.isnan(self.spot_infos.loc[idx].probabilities):
+                        label = torch.tensor([1-self.spot_infos.loc[idx].probabilities, self.spot_infos.loc[idx].probabilities])
+                    else:
+                        label = self.spot_infos.loc[idx].Annotation
+                        if label == 'Edge' or label=='Center':
+                            label = torch.tensor([0,1])
+                        else:
+                            label = torch.tensor([1,0])
                 else:
-                    label = 0
+                    label = self.spot_infos.loc[idx].Annotation
+                    if label == 'Edge' or label=='Center':
+                        label = torch.tensor(1)
+                    else:
+                        label = torch.tensor(0)
         
-        label = torch.tensor(label)
         
-        return image, label
+        return image, label.float()
     
     def get_num_images(self):
         '''

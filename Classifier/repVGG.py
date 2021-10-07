@@ -10,11 +10,18 @@ import numpy as np
 from adjust_LR import adjust_LR
 from metrics import calculate_metrics
 from sam import SAM
+from softloss import soft_target_loss, LabelSmoothingLoss
+from timm.data.mixup import Mixup
 
 class repVGG(pl.LightningModule):
-    def __init__(self, lr, model, batch_size, epochs, limit_batches, class_balance, pre_train, num_images, num_images_val, w_decay=0.1, spectral= False, sd_lambda=0.1, use_SAM = False, sam_rho = 0.05, drop = 0, drop_path = 0):
+    def __init__(self, lr, model, batch_size, epochs, limit_batches, class_balance, pre_train, num_images, num_images_val, w_decay=0.1, spectral= False, sd_lambda=0.1, use_SAM = False, sam_rho = 0.05, drop = 0, drop_path = 0, use_soft = False, use_mixup = False, prob_mixup = 1.0, label_smooth = False):
         super().__init__()
-        self.model = timm.create_model(model, pretrained=pre_train, num_classes = 1, drop_rate = drop, drop_path_rate = drop_path)
+        self.use_soft = use_soft
+        self.use_label_smoothing = label_smooth
+        if self.use_soft: # soft needs 2 outputs for softmax
+            self.model = timm.create_model(model, pretrained=pre_train, num_classes = 2, drop_rate = drop, drop_path_rate = drop_path)
+        else:
+            self.model = timm.create_model(model, pretrained=pre_train, num_classes = 1, drop_rate = drop, drop_path_rate = drop_path)
         self.learning_rate = adjust_LR(lr,batch_size)
         self.save_hyperparameters()
         self.batch_size = batch_size
@@ -34,12 +41,21 @@ class repVGG(pl.LightningModule):
         
         self.validation_loss_weights = calculate_loss_weights(num_images_val, beta = (sum(num_images_val)-1)/sum(num_images_val))
         self.test_loss_weights = calculate_loss_weights(TEST_CLASS_NUM) 
-        self.loss = torch.nn.functional.binary_cross_entropy_with_logits
+        if self.use_soft:
+            if self.use_label_smoothing:
+                self.loss = LabelSmoothingLoss
+            else:
+                self.loss = soft_target_loss
+        else:
+            self.loss = torch.nn.functional.binary_cross_entropy_with_logits
         self.w_decay = w_decay
         self.spectral = spectral
         self.Lambda = sd_lambda
         self.use_SAM = use_SAM
         self.sam_rho = sam_rho
+        self.mixup = use_mixup
+        if self.mixup:
+            self.mix_fn = Mixup(prob = prob_mixup, num_classes = 2)
         
     def forward(self, x):
         # x shape
@@ -76,10 +92,13 @@ class repVGG(pl.LightningModule):
     def enable_bn(self, model):
         model.train()
     
+    #HERE NEEDS TO INPUT SOFT LABELS RATHER THAN LABEL
     def compute_loss(self, batch):
         image, label = batch
+        if self.mixup:
+            image, label = self.mix_fn(image,label[:,1]) #needs to use soft labels with mixup
         out = self.forward(image)
-        if self.class_balance and self.spectral:
+        if self.class_balance and self.spectral: # SOFT LOSS DOESNT WORK WITH CLASS BALANCED YET!!!
             loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[label].to(label.device)) + self.Lambda * (out**2).mean()
         elif self.spectral:
             loss = self.loss(out.squeeze(), label.float()) + self.Lambda * (out**2).mean()
