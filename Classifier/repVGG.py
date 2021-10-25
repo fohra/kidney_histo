@@ -14,7 +14,7 @@ from softloss import soft_target_loss, LabelSmoothingLoss
 from timm.data.mixup import Mixup
 
 class repVGG(pl.LightningModule):
-    def __init__(self, lr, model, batch_size, epochs, limit_batches, class_balance, pre_train, num_images, num_images_val, w_decay=0.1, spectral= False, sd_lambda=0.1, use_SAM = False, sam_rho = 0.05, drop = 0, drop_path = 0, use_soft = False, use_mixup = False, prob_mixup = 1.0, label_smooth = False):
+    def __init__(self, lr, model, batch_size, epochs, limit_batches, class_balance, pre_train, num_images, num_images_val, w_decay=0.1, spectral= False, sd_lambda=0.1, use_SAM = False, sam_rho = 0.05, drop = 0, drop_path = 0, use_soft = False, use_mixup = False, prob_mixup = 1.0, label_smooth = False, sd_anneal = 100):
         super().__init__()
         self.use_soft = use_soft
         self.use_label_smoothing = label_smooth
@@ -56,6 +56,7 @@ class repVGG(pl.LightningModule):
         self.mixup = use_mixup
         if self.mixup:
             self.mix_fn = Mixup(prob = prob_mixup, num_classes = 2)
+        self.anneal = sd_anneal
         
     def forward(self, x):
         # x shape
@@ -99,9 +100,13 @@ class repVGG(pl.LightningModule):
             image, label = self.mix_fn(image,label[:,1]) #needs to use soft labels with mixup
         out = self.forward(image)
         if self.class_balance and self.spectral: # SOFT LOSS DOESNT WORK WITH CLASS BALANCED YET!!!
-            loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[label].to(label.device)) + self.Lambda * (out**2).mean()
+            loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[(label>0.5)*1].to(label.device)) 
+            if self.anneal< self.global_step:
+                loss += self.Lambda * (out**2).mean()
         elif self.spectral:
-            loss = self.loss(out.squeeze(), label.float()) + self.Lambda * (out**2).mean()
+            loss = self.loss(out.squeeze(), label.float())
+            if self.anneal< self.global_step:
+                loss += self.Lambda * (out**2).mean()
         else:
             loss = self.loss(out.squeeze(), label.float())
             
@@ -132,7 +137,7 @@ class repVGG(pl.LightningModule):
         image, label = val_batch
         out = self.forward(image)
         if self.class_balance and self.spectral:
-            loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[label].to(label.device)) + self.Lambda * (out**2).mean()
+            loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[(label>0.5)*1].to(label.device)) + self.Lambda * (out**2).mean()
         elif self.spectral:
             loss = self.loss(out.squeeze(), label.float()) + self.Lambda * (out**2).mean()
         else:
@@ -157,7 +162,7 @@ class repVGG(pl.LightningModule):
         image, label = batch
         out = self.model(image)
         if self.class_balance and self.spectral:
-            loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[label].to(label.device)) + self.Lambda * (out**2).mean()
+            loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[(label>0.5)*1].to(label.device)) + self.Lambda * (out**2).mean()
         elif self.spectral:
             loss = self.loss(out.squeeze(), label.float()) + self.Lambda * (out**2).mean()
         else:

@@ -1,6 +1,6 @@
 import argparse
 import numpy as np
-from dataset import CustomDataset
+from ValidationDataset import ValidationDataset
 from repVGG import repVGG
 import torch
 from torch.utils.data import DataLoader
@@ -53,7 +53,7 @@ def load_model(check_path):
                epochs=50,
                limit_batches=1,
                class_balance=False,
-               pre_train=True,
+               pre_train=False,
                num_images = [100,100],
                num_images_val = [100,100]
               )
@@ -68,21 +68,21 @@ def sig(x):
     return 1/(1 + np.exp(-x))
 
 #load dataset
-dataset = CustomDataset(tma_spot_dir= args.spot_dir,
-                        wsi_spot_dir = args.dummy_spot_dir,
+dataset = ValidationDataset(tma_spot_dir= args.spot_dir,
                         num_cancer = 0, 
                         num_benign = 0,
                         seed = 43,
-                        sample_train=False,
-                        prediction = True,
-                        norm_mean_std = args.mean_std
+                        sample_validation=False,
+                        norm_mean_std = args.mean_std,
+                        simple_transformation = True,
                         )
+
 
 loader = DataLoader(dataset, batch_size=args.batch, shuffle=False, num_workers=args.num_workers, drop_last=False)
 
 model = load_model(args.checkpoint)
 
-trainer = pl.Trainer(progress_bar_refresh_rate = 4, 
+trainer = pl.Trainer(progress_bar_refresh_rate = 100, 
                          gpus=args.num_gpus,
                          num_nodes=args.num_nodes,
                          accelerator='ddp',

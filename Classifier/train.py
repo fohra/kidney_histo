@@ -70,7 +70,8 @@ def train(args):
                    use_soft = args.use_soft,
                    use_mixup = args.use_mixup,
                    prob_mixup = args.mixup_prob, 
-                   label_smooth = args.label_smooth
+                   label_smooth = args.label_smooth,
+                   sd_anneal = args.sd_anneal
                   )
 
     # Logger for training

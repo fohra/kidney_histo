@@ -57,6 +57,7 @@ parser.add_argument('--prob_gaussian', action='store', type=float, required=Fals
 
 parser.add_argument('--spectral', action='store', type=bool, required=False, default = False, help='Whether to use spectral decoupling.')
 parser.add_argument('--sd_lambda', action='store', type=float, required=False, default = 0.1, help='Lambda coefficient for spectral decoupling.')
+parser.add_argument('--sd_anneal', action='store', type=int, required=False, default = 100, help='How many steps until use spectral decoupling.')
 
 parser.add_argument('--use_SAM', action='store', type=bool, required=False, default = False, help='Whether to use Sharpness Aware Minimization optimizer(SAM).')
 parser.add_argument('--sam_rho', action='store', type=float, required=False, default = 0.05, help='Rho coefficient for Sharpness Aware Minimization optimizer(SAM).')
