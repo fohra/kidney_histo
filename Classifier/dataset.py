@@ -137,14 +137,14 @@ class CustomDataset(Dataset):
         
         #load labels 
         if self.pred:
-            label = 0 # not used while predicting
+            label = torch.tensor([0]) # not used while predicting
         else:
             if self.relapse:
                 label = self.spot_infos.loc[idx].relapse
                 if label == True:
-                    label = 1
+                    label = torch.tensor([1])
                 else:
-                    label = 0
+                    label = torch.tensor([0])
             else:
                 if self.use_soft:
                     if not np.isnan(self.spot_infos.loc[idx].probabilities):

@@ -13,8 +13,8 @@ def soft_target_loss(x, y, weight = None):
         y (torch.tensor): Soft class labels
         weight (torch.tensor): Weights for class balanced loss. Lenght is number of images in batchs
     '''
-    loss = torch.sum(-target * F.log_softmax(x, dim=-1), dim=-1)
-    if weight:
+    loss = torch.sum(-y * F.log_softmax(x, dim=-1), dim=-1)
+    if weight is not None:
         loss = weight * loss
     
     return loss.mean()
@@ -31,7 +31,7 @@ def LabelSmoothingLoss(x, target, smoothing = 0.1, weight = None):
     nll_loss = nll_loss.squeeze(1)
     smooth_loss = -logprobs.mean(dim=-1)
     loss = (1-smoothing) * nll_loss + smoothing * smooth_loss
-    if weight:
+    if weight is not None:
         loss = weight * loss
     
     return loss.mean()

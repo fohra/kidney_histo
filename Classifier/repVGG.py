@@ -100,7 +100,10 @@ class repVGG(pl.LightningModule):
             image, label = self.mix_fn(image,label[:,1]) #needs to use soft labels with mixup
         out = self.forward(image)
         if self.class_balance and self.spectral: # SOFT LOSS DOESNT WORK WITH CLASS BALANCED YET!!!
-            loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[(label>0.5)*1].to(label.device)) 
+            if self.use_soft:
+                loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[(label>0.5)*1].to(label.device)[:,1]) 
+            else:
+                loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[(label>0.5)*1].to(label.device)) 
             if self.anneal< self.global_step:
                 loss += self.Lambda * (out**2).mean()
         elif self.spectral:
@@ -137,7 +140,10 @@ class repVGG(pl.LightningModule):
         image, label = val_batch
         out = self.forward(image)
         if self.class_balance and self.spectral:
-            loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[(label>0.5)*1].to(label.device)) + self.Lambda * (out**2).mean()
+            if self.use_soft:
+                loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[(label>0.5)*1].to(label.device)[:,1]) + self.Lambda * (out**2).mean()
+            else:
+                loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[(label>0.5)*1].to(label.device)) + self.Lambda * (out**2).mean()
         elif self.spectral:
             loss = self.loss(out.squeeze(), label.float()) + self.Lambda * (out**2).mean()
         else:
