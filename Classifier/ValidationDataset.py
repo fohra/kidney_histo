@@ -103,10 +103,16 @@ class ValidationDataset(Dataset):
         
         if self.relapse:
             label = self.spot_infos.loc[idx].relapse
-            if label == True:
-                label = 1
+            if self.use_soft:
+                if label == True:
+                    label = torch.tensor([0,1])
+                else:
+                    label = torch.tensor([1,0])
             else:
-                label = 0
+                if label == True:
+                    label = torch.tensor([1])
+                else:
+                    label = torch.tensor([0])
         else:
             if self.use_soft:
                 label = self.spot_infos.loc[idx].Annotation
