@@ -167,13 +167,13 @@ class repVGG(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         image, label = batch
         out = self.model(image)
-        if self.class_balance and self.spectral:
-            loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[(label>0.5)*1].to(label.device)) + self.Lambda * (out**2).mean()
-        elif self.spectral:
-            loss = self.loss(out.squeeze(), label.float()) + self.Lambda * (out**2).mean()
-        else:
-            loss = self.loss(out.squeeze(), label.float())
-        self.log('test_loss', loss)
+        #if self.class_balance and self.spectral:
+        #    loss = self.loss(out.squeeze(), label.float(), weight = self.train_loss_weights[(label>0.5)*1].to(label.device)) + self.Lambda * (out**2).mean()
+        #elif self.spectral:
+        #    loss = self.loss(out.squeeze(), label.float()) + self.Lambda * (out**2).mean()
+        #else:
+        #    loss = self.loss(out.squeeze(), label.float())
+        #self.log('test_loss', loss)
         return (out, label)
 
     def test_epoch_end(self, test_step_outputs):

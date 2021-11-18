@@ -11,7 +11,7 @@ import numpy as np
 
 
 class ValidationDataset(Dataset):
-    def __init__(self, tma_spot_dir, num_cancer, num_benign, seed, num_relapse=0, num_non_relapse=0, include_edge = False, include_center=True, sample_validation=False, train_relapse = False, norm_mean_std = 'HBP', prob_gaussian=0.05, simple_transformation=False, use_soft=False):
+    def __init__(self, tma_spot_dir, num_cancer, num_benign, seed, num_relapse=0, num_non_relapse=0, include_edge = False, include_center=True, sample_validation=False, train_relapse = False, norm_mean_std = 'HBP', prob_gaussian=0.05, simple_transformation=False, use_soft=False, days_relapse = 10000):
         '''
         Args:
         spot_dir (string/pandas Dataframe): Path to excel file(or the file itself), that contains clinical info about the TMA spots
@@ -33,9 +33,10 @@ class ValidationDataset(Dataset):
         label (torch.Tensor): Label indicating if there is cancer in the picture. 1=Cancer, 0=Benign 
         '''
         self.use_soft = use_soft
+        self.days_relapse  =  days_relapse
         
         if (isinstance(tma_spot_dir, str)):
-            self.tma_spot_infos = pd.read_csv(tma_spot_dir, usecols = ['IDs', 'path', 'relapse', 'Annotation'])
+            self.tma_spot_infos = pd.read_csv(tma_spot_dir)
         else:
             raise Exception('Wrong type for spot_dirs. Pass either path to csv file or pandas Dataframe. Type was for tma ' + str(type(tma_spot_dir)))
         
@@ -56,8 +57,12 @@ class ValidationDataset(Dataset):
                                           )
         
         if self.relapse:
-            self.num_class_zero = len(self.spot_infos[self.spot_infos['relapse'] == False])
-            self.num_class_one = len(self.spot_infos[self.spot_infos['relapse'] == True])
+            if self.days_relapse == 10000: #DONT TAKE days until relapse into account
+                self.num_class_zero = len(self.spot_infos[(self.spot_infos['relapse'] == False)])
+                self.num_class_one = len(self.spot_infos[(self.spot_infos['relapse'] == True)])
+            else:
+                self.num_class_zero = len(self.spot_infos[(self.spot_infos['relapse'] == False) | (self.spot_infos['Days_Relapse'] > self.days_relapse) | (self.spot_infos['Days_Relapse'].isna())])
+                self.num_class_one = len(self.spot_infos[(self.spot_infos['relapse'] == True) & (self.spot_infos['Days_Relapse'] <= self.days_relapse)])
         else:
             self.num_class_zero = len(self.spot_infos[self.spot_infos['Annotation'] == 'Normal'])
             self.num_class_one = len(self.spot_infos[(self.spot_infos['Annotation'] == 'Center') | (self.spot_infos['Annotation'] == 'Edge')]) 
@@ -103,13 +108,14 @@ class ValidationDataset(Dataset):
         
         if self.relapse:
             label = self.spot_infos.loc[idx].relapse
+            days= self.spot_infos.loc[idx].Days_Relapse
             if self.use_soft:
-                if label == True:
+                if (label == True) & (days <= self.days_relapse):
                     label = torch.tensor([0,1])
                 else:
                     label = torch.tensor([1,0])
             else:
-                if label == True:
+                if (label == True) & (days <= self.days_relapse):
                     label = torch.tensor([1])
                 else:
                     label = torch.tensor([0])

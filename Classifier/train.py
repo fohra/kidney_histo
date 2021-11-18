@@ -32,7 +32,8 @@ def train(args):
                               train_relapse = args.relapse_train,
                               norm_mean_std = args.mean_std,
                               prob_gaussian = args.prob_gaussian,
-                              use_soft = args.use_soft
+                              use_soft = args.use_soft,
+                              days_relapse  = args.days_relapse
                              ) 
     
     valid_set = ValidationDataset(tma_spot_dir = args.valid_spot_dir, 
@@ -45,7 +46,9 @@ def train(args):
                                   train_relapse = args.relapse_train, 
                                   norm_mean_std = args.mean_std, 
                                   prob_gaussian=args.prob_gaussian,
-                                  use_soft=args.use_soft)
+                                  use_soft=args.use_soft,
+                              days_relapse  = args.days_relapse
+                                 )
     
     trainloader = DataLoader(train_set, batch_size=args.batch, shuffle=True, num_workers=args.num_workers, drop_last=True)
     validloader = DataLoader(valid_set, batch_size=args.batch, shuffle =False, num_workers=args.num_workers)

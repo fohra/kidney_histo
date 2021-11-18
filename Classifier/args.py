@@ -69,7 +69,7 @@ parser.add_argument('--use_mixup', action='store', type=bool, required=False, de
 parser.add_argument('--mixup_prob', action='store', type=float, required=False, default = 1.0, help='Probability for mixing of images and labels.')
 parser.add_argument('--label_smooth', action='store', type=bool, required=False, default = False, help='Use label smoothing loss')
 
-
+parser.add_argument('--days_relapse', action='store', type=int, required=False, default = 10000, help='Number of days until relapse is classified true')
 
 args = parser.parse_args()
 
