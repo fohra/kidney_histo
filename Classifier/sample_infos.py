@@ -1,6 +1,6 @@
 import pandas as pd
 
-def sample_infos(infos, num_cancer, num_benign, seed, num_relapse=0, num_non_relapse=0, include_edge = False, include_center=True):
+def sample_infos(infos, num_cancer, num_benign, seed, num_relapse=0, num_non_relapse=0, num_death = 0, num_alive = 0, include_edge = False, include_center=True):
     '''Sample images based on the desired ratio
     infos (pandas DataFrame):
         DataFrame containing image paths and infos
@@ -61,7 +61,7 @@ def sample_infos(infos, num_cancer, num_benign, seed, num_relapse=0, num_non_rel
             raise Exception('Not enough images in relapse set. Number of relapse images: '+str(len(relapse)))
         
         elif num_non_relapse > len(non_relapse):
-            raise Exception('Not enough images in non_relapse set. Number of non_relapse images: '+str(len(cancer)))
+            raise Exception('Not enough images in non_relapse set. Number of non_relapse images: '+str(len(non_relapse)))
         
         #sample wanted number of images
         if not num_relapse == len(relapse):
@@ -69,5 +69,28 @@ def sample_infos(infos, num_cancer, num_benign, seed, num_relapse=0, num_non_rel
         if not num_non_relapse == len(non_relapse):
             non_relapse = non_relapse.sample(n=num_non_relapse, random_state=seed).reset_index(drop=True)
         ret_df = pd.concat([relapse,non_relapse], ignore_index=True)
-            
+    
+    # Sample death if needed
+    if (num_death + num_alive)> 0:
+        death = ret_df[ret_df['Cause_of_Death'] == 'MUNUAISSYÖPÄ'].copy()
+        alive = ret_df[ret_df['Cause_of_Death'] != 'MUNUAISSYÖPÄ'].copy()
+
+        #Raise errors if dataframes are too small to sample all wanted images
+        if (num_death > len(death)) & (num_alive > len(alive)):
+            raise Exception('Not enough images in death and alive sets. Number of alive images: ' 
+                            + str(len(alive))+ '. Number of death images: '+str(len(death)))
+        
+        if num_death > len(death):
+            raise Exception('Not enough images in death set. Number of death images: '+str(len(death)))
+        
+        elif num_alive > len(alive):
+            raise Exception('Not enough images in alive set. Number of alive images: '+str(len(alive)))
+        
+        #sample wanted number of images
+        if not num_death == len(death):
+            death = death.sample(n=num_death, random_state=seed).reset_index(drop=True)
+        if not num_alive == len(alive):
+            alive = alive.sample(n=num_alive, random_state=seed).reset_index(drop=True)
+        ret_df = pd.concat([death,alive], ignore_index=True)
+    
     return ret_df

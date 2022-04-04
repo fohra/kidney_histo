@@ -43,8 +43,11 @@ parser.add_argument('--num_benign_wsi', action='store', type=int, required=False
 parser.add_argument('--num_cancer_val', action='store', type=int, required=False, default=4976, help='Number of cancer images to use in validation')
 parser.add_argument('--num_benign_val', action='store', type=int, required=False, default=2654, help='Number of cancer images to use in validation')
 
-parser.add_argument('--num_relapse', action='store', type=int, required=False, default=0, help='Number of cancer images to use')
-parser.add_argument('--num_non_relapse', action='store', type=int, required=False, default=0, help='Number of cancer images to use')
+parser.add_argument('--num_relapse', action='store', type=int, required=False, default=0, help='Number of relapse images to use')
+parser.add_argument('--num_non_relapse', action='store', type=int, required=False, default=0, help='Number of non relapse images to use')
+
+parser.add_argument('--num_death', action='store', type=int, required=False, default=0, help='Number of death images to use')
+parser.add_argument('--num_alive', action='store', type=int, required=False, default=0, help='Number of alive images to use')
 
 parser.add_argument('--pre_train', action='store', type=bool, required=False, default = False, help='Whether to use pre_trained network as initialization.')
 parser.add_argument('--output_wandb', action='store', type=str, required=False, default = '/data/atte/models/wandb/', help='Where to save wandb logs')
@@ -70,6 +73,9 @@ parser.add_argument('--mixup_prob', action='store', type=float, required=False, 
 parser.add_argument('--label_smooth', action='store', type=bool, required=False, default = False, help='Use label smoothing loss')
 
 parser.add_argument('--days_relapse', action='store', type=int, required=False, default = 10000, help='Number of days until relapse is classified true')
+
+parser.add_argument('--train_death', action='store', type=bool, required=False, default = False, help='Whether to trainss a death classifier.')
+parser.add_argument('--days_death', action='store', type=int, required=False, default = 10000, help='Number of days until death is classified true')
 
 args = parser.parse_args()
 
